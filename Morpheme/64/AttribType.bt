@@ -846,25 +846,23 @@ typedef struct(int iAlignment, quad cStart)
 
 typedef struct(int iAlignment, quad cStart)
 {    
-    int m_noise : 1;
-    int m_sawWave : 2;
-    int m_easeInEaseOut : 3;
+    int m_flags : 1;
     float m_noiseSawFrequency;
-    float m_fVar3;
-    uquad m_pData1 <format=hex>;
-    uquad m_pData2 <format=hex>;
-    uquad m_pData3 <format=hex>;
+    float m_timeOffset;
+    uquad m_pTable1 <format=hex>;
+    uquad m_pTable2 <format=hex>;
+    uquad m_pTable3 <format=hex>;
     
     PadToAlignment(iAlignment);
     
-    FSeek(cStart + m_pData1);
-    ubyte m_data1[28];
+    FSeek(cStart + m_pTable1);
+    ubyte m_data1[7];
     
-    FSeek(cStart + m_pData2);
-    ubyte m_data2[76];
+    FSeek(cStart + m_pTable2);
+    ubyte m_data2[19];
 
-    FSeek(cStart + m_pData3);
-    ubyte m_data3[124];
+    FSeek(cStart + m_pTable3);
+    ubyte m_data3[31];
         
     PadToAlignment(iAlignment);    
 } AttribNoiseGen;
