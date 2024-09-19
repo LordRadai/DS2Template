@@ -819,19 +819,18 @@ typedef struct(int iAlignment, quad cStart)
 {
     Vector3 m_vectorRate;
     float m_floatRateIncreasing;
-    float m_floatRateDecreasing;
     float m_initialValueX;
     float m_initialValueY;
     float m_initialValueZ;
-    bool m_useInitValueOnInit;
-    bool m_smoothVelocity;
+    bool m_useInitValOnInit;
+    bool m_smoothVel;
     PadToAlignment(iAlignment);    
 } AttribSmoothFloat;
 
 typedef struct(int iAlignment, quad cStart)
 {
-    ubyte m_data[20];
-    
+    Vector3 m_lastVector;
+    float m_lastFloat;    
     PadToAlignment(iAlignment);    
 } AttribRateOfChangeOperation;
 
@@ -839,7 +838,7 @@ typedef struct(int iAlignment, quad cStart)
 {    
     float m_min;
     float m_max;
-    float m_interval;
+    float m_duration;
     int m_seed;
     
     PadToAlignment(iAlignment);    
@@ -1083,7 +1082,7 @@ typedef struct(int iAlignment, quad cStart)
 
 typedef struct(int iAlignment, quad cStart)
 {
-    Vector3 m_up;
+    Vector3 m_upAxis;
     int m_numLimbs;
     
     PadToAlignment(iAlignment);    
@@ -1122,14 +1121,14 @@ typedef struct(int iAlignment, quad cStart)
     float m_footAlignToSurfaceAngleLimit;
     float m_footAlignToSurfaceMaxSlopeAngle;
     float m_footLiftingHeightLimit;
-    int m_numLimbs;
+    int m_numLimbs; Assert(m_numLimbs == 2);
     PadToAlignment(16);
 
     uquad m_pChainInfo[2] <format=hex>;
     
     PadToAlignment(16);
     local int i = 0;
-    for (i = 0; i < m_numLimbs; i++)
+    for (i = 0; i < 2; i++)
     {
         FSeek(cStart + m_pChainInfo[i]);
         ChainData m_chainInfo;
@@ -1138,20 +1137,25 @@ typedef struct(int iAlignment, quad cStart)
     PadToAlignment(iAlignment);    
 } AttribBasicUnevenTerrainChain;
 
+typedef struct
+{
+    int m_eventTrackID;
+} LimbData;
+
 typedef struct(int iAlignment, quad cStart)
 {
-    float m_predictionSlopeAngleLimit;
-    float m_predictionLateralAngleLimit;
-    float m_redictionCloseFootbaseTolFrac;
-    int m_hipsCount;
+    float m_footLiftingSlopeAngleLimit;
+    float m_footLiftingLateralAngleLimit;
+    float m_closeFootbaseTolFrac;
+    int m_numLimbs; Assert(m_numLimbs == 2); //If this is not true then I don't understand how this node works
     PadToAlignment(8);
-    uquad m_pEventTrackIDs[m_hipsCount] <format=hex>;
+    uquad m_pLimbData[2] <format=hex>;
     
     local int i = 0;
-    for (i = 0; i < m_hipsCount; i++)
+    for (i = 0; i < 2; i++)
     {
-        FSeek(cStart + m_pEventTrackIDs[i]);
-        uint m_eventTrackID;
+        FSeek(cStart + m_pLimbData[i]);
+        LimbData m_limbData;
     }
     
     PadToAlignment(iAlignment);    
