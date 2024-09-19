@@ -1,0 +1,1519 @@
+#include "Core.bt"
+#include "TransitConditonDef.bt"
+
+enum <ushort> AttribType
+{
+    ATTRIB_TYPE_BOOL = 0,
+    ATTRIB_TYPE_UINT = 1,
+    ATTRIB_TYPE_INT = 2,
+    ATTRIB_TYPE_FLOAT = 3,
+    ATTRIB_TYPE_VECTOR3 = 4,
+    ATTRIB_TYPE_VECTOR4 = 5,
+    ATTRIB_TYPE_BOOL_ARRAY = 6,
+    ATTRIB_TYPE_UINT_ARRAY = 7,
+    ATTRIB_TYPE_INT_ARRAY = 8,
+    ATTRIB_TYPE_FLOAT_ARRAY = 9,
+    ATTRIB_TYPE_UPDATE_PLAYBACK_POS = 10,
+    ATTRIB_TYPE_PLAYBACK_POS = 11,
+    ATTRIB_TYPE_UPDATE_SYNC_EVENT_PLAYBACK_POS = 12,
+    ATTRIB_TYPE_TRANSFORM_BUFFER = 13,
+    ATTRIB_TYPE_TRAJECTORY_DELTA_TRANSFORM = 14,
+    ATTRIB_TYPE_TRANSFORM = 15,
+    ATTRIB_TYPE_VELOCITY = 16,
+    ATTRIB_TYPE_SYNC_EVENT_TRACK = 17,
+    ATTRIB_TYPE_SAMPLED_EVENTS_BUFFER = 18,
+    ATTRIB_TYPE_DURATION_EVENT_TRACK_SET = 19,
+    ATTRIB_TYPE_RIG = 20,
+    ATTRIB_TYPE_SOURCE_ANIM = 21,
+	ATTRIB_TYPE_RIG_TO_ANIM_MAP = 22,								 
+    ATTRIB_TYPE_SOURCE_EVENT_TRACKS = 23,
+    ATTRIB_TYPE_HEAD_LOOK_SETUP = 24,
+    ATTRIB_TYPE_HEAD_LOOK_CHAIN = 25,
+    ATTRIB_TYPE_GUN_AIM_SETUP = 26,
+    ATTRIB_TYPE_GUN_AIM_IK_CHAIN = 27,
+    ATTRIB_TYPE_TWO_BONE_IK_SETUP = 28,
+    ATTRIB_TYPE_TWO_BONE_IK_CHAIN = 29,
+    ATTRIB_TYPE_LOCK_FOOT_SETUP = 30,
+    ATTRIB_TYPE_LOCK_FOOT_CHAIN = 31,
+    ATTRIB_TYPE_LOCK_FOOT_STATE = 32,
+    ATTRIB_TYPE_HIPS_IK_DEF = 33,
+    ATTRIB_TYPE_HIPS_IK_ANIM_SET_DEF = 34,
+    ATTRIB_TYPE_CLOSEST_ANIM_DEF = 35,
+    ATTRIB_TYPE_CLOSEST_ANIM_DEF_ANIM_SET = 36,
+    ATTRIB_TYPE_CLOSEST_ANIM_STATE = 37,
+    ATTRIB_TYPE_STATE_MACHINE_DEF = 38,
+    ATTRIB_TYPE_STATE_MACHINE = 39,
+    ATTRIB_TYPE_PHYSICS_RIG = 40,
+    ATTRIB_TYPE_PHYSICS_RIG_DEF = 41,
+    ATTRIB_TYPE_CHARACTER_PROPERTIES = 42,
+    ATTRIB_TYPE_CHARACTER_CONTROLLER_DEF = 43,
+    ATTRIB_TYPE_ANIM_TO_PHYSICS_MAP = 44,
+    ATTRIB_TYPE_PHYSICS_SETUP = 45,
+    ATTRIB_TYPE_PHYSICS_SETUP_ANIM_SET = 46,
+    ATTRIB_TYPE_PHYSICS_STATE = 47,
+    ATTRIB_TYPE_PHYSICS_INITIALISATION = 48,
+    ATTRIB_TYPE_PHYSICS_GROUPER_CONFIG = 49,
+    ATTRIB_TYPE_FLOAT_OPERATION = 50,
+    ATTRIB_TYPE_2_FLOAT_OPERATION = 51,
+    ATTRIB_TYPE_SMOOTH_FLOAT_OPERATION = 52,
+    ATTRIB_TYPE_RATE_OF_CHANGE_OPERATION = 53,
+    ATTRIB_TYPE_RANDOM_FLOAT_OPERATION = 54,
+    ATTRIB_TYPE_RANDOM_FLOAT_DEF = 55,
+    ATTRIB_TYPE_NOISE_GEN_DEF = 56,
+    ATTRIB_TYPE_SWITCH_DEF = 57,
+    ATTRIB_TYPE_RAY_CAST_DEF = 58,
+    ATTRIB_TYPE_TRANSIT_DEF = 59,
+    ATTRIB_TYPE_TRANSIT_SYNC_EVENTS_DEF = 60,
+    ATTRIB_TYPE_TRANSIT_SYNC_EVENTS = 61,
+    ATTRIB_TYPE_DEAD_BLEND_DEF = 62,
+    ATTRIB_TYPE_DEAD_BLEND_STATE = 63,
+    ATTRIB_TYPE_BLEND_NXM_DEF = 65,
+    ATTRIB_TYPE_ANIM_MIRRORED_MAPPING = 66,
+    ATTRIB_TYPE_PLAYBACK_POS_INIT = 67,
+    ATTRIB_TYPE_EMITTED_MESSAGE_MAP = 68,
+    ATTRIB_TYPE_BASIC_UNEVEN_TERRAIN_SETUP = 69,
+    ATTRIB_TYPE_BASIC_UNEVEN_TERRAIN_IK_SETUP = 70,
+    ATTRIB_TYPE_BASIC_UNEVEN_TERRAIN_FOOT_LIFTING_TARGET = 71,
+    ATTRIB_TYPE_BASIC_UNEVEN_TERRAIN_IK_STATE = 72,
+    ATTRIB_TYPE_BASIC_UNEVEN_TERRAIN_CHAIN = 73,
+    ATTRIB_TYPE_PREDICTIVE_UNEVEN_TERRAIN_IK_PREDICTION_STATE = 74,
+    ATTRIB_TYPE_PREDICTIVE_UNEVEN_TERRAIN_FOOT_LIFTING_STATE = 75,
+    ATTRIB_TYPE_PREDICTIVE_UNEVEN_TERRAIN_PREDICTION_DEF = 76,
+    ATTRIB_TYPE_SCATTER_BLEND_ANALYSIS_DEF = 77,
+    ATTRIB_TYPE_SCATTER_BLEND_1D_DEF = 78,
+    ATTRIB_TYPE_SCATTER_BLEND_2D_DEF = 79,
+    ATTRIB_TYPE_SCATTER_BLEND_2D_STATE = 80,
+    ATTRIB_TYPE_EMIT_MESSAGE_ON_CP_VALUE = 81,
+    ATTRIB_TYPE_PHYSICS_INFO_DEF = 82,
+    ATTRIB_TYPE_PHYSICS_OBJECT_POINTER = 83,
+    ATTRIB_TYPE_JOINT_LIMITS = 84,
+    ATTRIB_TYPE_BLEND_FLAGS = 85,
+    ATTRIB_TYPE_BLEND_WEIGHTS = 86,
+    ATTRIB_TYPE_FEATHER_BLEND2_CHANNEL_ALPHAS = 87,
+    ATTRIB_TYPE_RETARGET_STATE = 88,
+    ATTRIB_TYPE_RIG_RETARGET_MAPPING = 89,
+    ATTRIB_TYPE_SCALECHARACTER_STATE = 90,
+    ATTRIB_TYPE_RETARGET_STORAGE_STATS = 91,
+    ATTRIB_TYPE_C_C_OVERRIDE_CONDITIONS_DEF = 92,
+    ATTRIB_TYPE_C_C_OVERRIDE_PROPERTIES_DEF = 93,
+    ATTRIB_TYPE_C_C_OVERRIDE_CONDITIONS = 94,
+};
+
+typedef struct
+{
+    int64 m_size;
+    int64 m_alignment;
+} Format <read=ReadFormat>;
+
+enum<uint> BlendMode
+{
+    BLEND_MODE_INTERP_ATT_INTERP_POS = 0,
+    BLEND_MODE_INTERP_ATT_ADD_POS    = 1, 
+    BLEND_MODE_ADD_ATT_LEAVE_POS     = 2, 
+    BLEND_MODE_ADD_ATT_ADD_POS       = 3, 
+    BLEND_MODE_SUB_ATT_SUB_POS       = 4 
+};
+
+string ReadFormat(Format& data)
+{
+    local string str = "";
+    
+    SPrintf(str, "(%d, %d)", data.m_size, data.m_alignment);
+    
+    return str;
+}
+
+typedef struct
+{
+    int m_numBits;
+    int m_numUInts;     
+    int m_data[m_numUInts] <format=binary>;
+} UsedFlags <read=ReadUsedFlags>;
+
+string ReadUsedFlags(UsedFlags &data)
+{
+    local string str = "";
+    SPrintf(str, "(%d, %d)", data.m_numBits, data.m_numUInts);
+    
+    return str;
+}
+
+typedef struct(int iAlignment, quad cStart)
+{    
+    bool m_value;
+    
+    PadToAlignment(iAlignment);
+} AttribBool;
+
+typedef struct(int iAlignment, quad cStart)
+{   
+    float m_value;
+    
+    PadToAlignment(iAlignment);
+} AttribFloat;
+
+typedef struct(int iAlignment, quad cStart)
+{   
+    int m_value;
+    
+    PadToAlignment(iAlignment);
+} AttribInt;
+
+typedef struct(int iAlignment, quad cStart)
+{   
+    uint m_value;
+    
+    PadToAlignment(iAlignment);
+} AttribUInt;
+
+typedef struct(int iAlignment, quad cStart)
+{   
+    PadToAlignment(16);
+    Vector3 m_value;
+    
+    PadToAlignment(iAlignment);
+} AttribVector3;
+
+typedef struct(int iAlignment, quad cStart)
+{      
+    int m_count;
+    PadToAlignment(8);
+    quad m_pData <format=hex>;
+    
+    if (m_count > 0)
+    {
+        FSeek(cStart + m_pData);
+        bool m_values[m_count];
+    }
+    
+    PadToAlignment(iAlignment);
+} AttribBoolArray;
+
+typedef struct(int iAlignment, quad cStart)
+{      
+    int m_count;
+    PadToAlignment(8);    
+    uquad m_pData <format=hex>;
+    
+    if (m_count > 0)
+    {
+        FSeek(cStart + m_pData);
+        int m_values[m_count];
+    }
+    
+    PadToAlignment(iAlignment);
+} AttribIntArray;
+
+typedef struct(int iAlignment, quad cStart)
+{
+    int m_count;
+    PadToAlignment(8);
+    uquad m_pData <format=hex>;
+    
+    if (m_count > 0)
+    {    
+        FSeek(cStart + m_pData);
+        uint m_values[m_count];
+    }
+    
+    PadToAlignment(iAlignment);
+} AttribUIntArray;
+
+typedef struct(int iAlignment, quad cStart)
+{    
+    int m_count;
+    PadToAlignment(8);    
+    uquad m_pData <format=hex>;
+    
+    if (m_count > 0)
+    {    
+        FSeek(cStart + m_pData);
+        float m_values[m_count];
+    }
+    
+    PadToAlignment(iAlignment);
+} AttribFloatArray;
+
+typedef struct(int iAlignment, quad cStart)
+{
+      float m_currentPosAdj;
+      float m_previousPosAdj;
+      float m_currentPosReal;
+      float m_previousPosReal;
+      float m_delta;
+      bool  m_setWithAbs;
+      bool  m_inclusiveStart;
+    
+    PadToAlignment(iAlignment);      
+} AttribPlaybackPos;
+
+typedef struct(int iAlignment, quad cStart)
+{    
+    Quaternion m_deltaAtt;
+    Vector3 m_deltaPos;
+    bool m_filteredOut;
+   
+    PadToAlignment(iAlignment);      
+} AttribTrajectoryDeltaTransform;
+
+typedef struct(int iAlignment, quad cStart)
+{    
+    uquad m_bundleID <format=hex>;
+    Format m_rigMemReqs;
+    
+    PadToAlignment(iAlignment);
+} AttribRig;
+
+typedef struct(int iAlignment, quad cStart)
+{    
+    uquad m_pAnim <format=hex>;
+    uquad m_pRigToAnimMap <format=hex>;
+    Vector3 m_transformAtStartPos;
+    Quaternion m_transformAtStartQuat;
+    Vector3 m_transformAtEndPos;
+    Quaternion m_transformAtEndQuat;
+    uquad m_pSourceTrajectoryChannel <format=hex>;
+    uint m_animSize;
+    uint m_rigToAnimMapSize;
+    uint m_trajectorySize;
+    uint m_animAssetID;    
+    uint m_rigToAnimMapAssetID <format=hex>;
+    ubyte m_registeredAnimFormatIndex;
+    ubyte m_startSyncEventIndex;
+    ubyte m_clipStartSyncEventIndex;
+    ubyte m_clipEndSyncEventIndex;
+    float m_clipStartFraction;
+    float m_clipEndFraction;
+    float m_sourceAnimDuration;
+    int m_syncEventTrackIndex;
+    bool m_playBackwards;
+    
+    PadToAlignment(iAlignment);
+} AttribSourceAnim;
+
+typedef struct(quad cStart)
+{
+    int m_numTracks;
+    PadToAlignment(8);
+    uquad m_pEventTracks <format=hex>;
+    uquad m_pDataSizes <format=hex>;
+    
+    local quad cBak = FTell();
+    if (m_numTracks > 0)
+    {
+        FSeek(cStart + m_pEventTracks);
+        uquad m_bundleID[m_numTracks] <format=hex>;
+        
+        FSeek(cStart + m_pDataSizes);      
+        int m_dataSize[m_numTracks];
+        
+        FSeek(cBak);
+    }
+} EventTrackList <read=ReadEventTrackList>;
+
+string ReadEventTrackList(EventTrackList &data)
+{
+    local string str = "";
+    
+    SPrintf(str, "%d", data.m_numTracks);
+    
+    return str;
+}
+
+typedef struct(int iAlignment, quad cStart)
+{
+    EventTrackList m_discreteEventTracks(cStart);
+    EventTrackList m_curveEventTracks(cStart);
+    EventTrackList m_durationEventTracks(cStart);
+    PadToAlignment(iAlignment);
+    
+    PadToAlignment(iAlignment);
+} AttribSourceEventTrack;
+
+typedef struct
+{
+    local quad pStart = FTell();
+    local quad pBak;
+
+    short m_nodeID;    
+    short m_numEntryConditions;
+    PadToAlignment(8);
+    uquad m_pEntryConditionIndexes <format=hex>;
+    
+    short m_sourceStateID;
+    short m_destinationStateID;
+    
+    if (m_numEntryConditions > 0)
+    {
+        pBak = FTell();
+        FSeek(pStart + m_pEntryConditionIndexes);
+        short m_entryConditionIndexes[m_numEntryConditions];
+        PadToAlignment(4);
+    
+        FSeek(pBak); 
+    }         
+    
+    short m_numExitConditions;
+    PadToAlignment(8);
+    uquad m_pExitConditionIndexes <format=hex>;
+    short m_numExitBreakoutConditions;
+    short m_numExitTransitionStates;
+    PadToAlignment(8);    
+    uquad m_pExitTransitionStateIDs <format=hex>;
+    
+    pBak = FTell();
+    
+    if (m_numExitConditions > 0)
+    {
+        FSeek(pStart + m_pExitConditionIndexes);
+        short m_exitConditionIndexes[m_numExitConditions];
+        FSeek(pBak);
+    }
+    
+    pBak = FTell();
+    
+    if (m_numExitTransitionStates > 0)
+    {
+        FSeek(pStart + m_pExitTransitionStateIDs);
+        short m_exitTransitionStateIDs[m_numExitTransitionStates];
+        FSeek(pBak);
+    }    
+       
+} StateDef <read=ReadStateDef>;
+
+string ReadStateDef(StateDef &data)
+{
+    local string str;
+    SPrintf(str, "(%d, %d, %d)", data.m_nodeID, data.m_numEntryConditions, data.m_numExitTransitionStates);
+    
+    return str;
+}
+
+typedef struct
+{
+    TransitConditionDef m_type;
+    byte m_invert;
+    PadToAlignment(8);
+    uquad m_locateFn;
+    uquad m_dislocateFn;
+    uquad m_relocateFn;
+    uquad m_getMemReqsFn;
+    uquad m_initFn;
+    uquad m_updateFn;
+    uquad m_queueDepsFn;
+    uquad m_resetFn;    
+    CreateTransitConditionData(m_type);
+} TransitConditionDefData<read=ReadTransitConditionDefData>;
+
+string ReadTransitConditionDefData(TransitConditionDefData &data)
+{
+    local string str = EnumToString(data.m_type);
+    
+    if (str == "")
+        SPrintf(str, "TransitCondition_%d", data.m_type);
+        
+    return str;
+}
+
+typedef struct(int iCount, int pBase)
+{
+    uquad m_pTransitConditionDefs[iCount] <format=hex>;
+    
+    local int i = 0;
+    
+    for(i = 0; i < iCount; i++)
+    {
+        FSeek(pBase + m_pTransitConditionDefs[i]);
+        TransitConditionDefData m_transitConditionDef;
+    }
+} TransitConditionDefs;
+
+typedef struct(int iAlignment, quad cStart)
+{
+    short m_defaultStartingStateID;
+    short m_numStates;
+    PadToAlignment(8);
+    uquad m_pStateDefs <format=hex>;
+    uquad m_pGlobalStateDef <format=hex>;
+    bool m_prioritiseGlobalTransitions;
+    PadToAlignment(2);
+    short m_numConditions;
+    PadToAlignment(8);
+    uquad m_pConditions <format=hex>;
+    
+    FSeek(cStart + m_pStateDefs);
+    StateDef m_stateDefs[m_numStates] <optimize=false>;
+    
+    FSeek(cStart + m_pGlobalStateDef);   
+    StateDef m_globalStateDef;
+    
+    local int i = 0;
+    
+    if (m_numConditions > 0)
+    {
+        FSeek(cStart + m_pConditions);
+        TransitConditionDefs m_conditions(m_numConditions, cStart);
+    }
+    
+    PadToAlignment(iAlignment);
+} AttribStateMachineDef;
+
+//Missing pointers
+typedef struct
+{
+    Vector3 m_scales;
+    Vector3 m_offsets;
+    int m_lenght;
+    uquad m_sampledKeys <format=hex>;
+} CompressedDataBufferVector3;
+
+//Missing pointers
+typedef struct
+{
+    Vector3 m_scales;
+    Vector3 m_offsets;
+    int m_lenght;
+    uquad m_pSampledKeyesX <format=hex>;
+    uquad m_pSampledKeyesY <format=hex>;
+    uquad m_pSampledKeyesZ <format=hex>;
+} CompressedDataBufferQuat;
+
+//Missing pointers
+typedef struct(int lenght)
+{
+    uquad m_pSourceTransformsPos <format=hex>;
+    uquad m_pSourceTransformsAtt <format=hex>;
+    uquad m_pSourceTransformsPosVel <format=hex>;
+    uquad m_pSourceTransformsAngVel <format=hex>;
+} ClosestAnimSourceData;
+
+typedef struct(int iAlignment, quad cStart)
+{
+    Vector3 m_rootRotationAxis;
+	Quaternion m_upAlignAtt;
+	bool m_useRootRotationBlending;
+	PadToAlignment(4);
+    float m_fractionThroughSource;
+    float m_maxRootRotationAngle;
+    int m_numAnimJoints;
+    bool m_precomputeSourcesOffline;
+    bool m_useVelocity;
+    PadToAlignment(4);
+    float m_positionScaleFactor;
+    float m_orientationScaleFactor;
+    float m_influenceBetweenPosAndOrient;
+    int m_numSources;
+    uquad m_pSourceDataArray <format=hex>;
+    
+    local quad cBak = FTell();
+    FSeek(cStart + m_pSourceDataArray);
+    uquad m_sourceDataArray[m_numSources] <format=hex>;
+    
+    local int i = 0;
+    for (i = 0; i < m_numSources; i++)
+    {
+        FSeek(cStart + m_sourceDataArray[i]);
+        ClosestAnimSourceData m_sourceData;
+    }
+    
+    FSeek(cBak);
+    
+    int m_numDescendants;
+    uquad m_pDescendantIDs <format=hex>;
+    
+    FSeek(cStart + m_pSourceDataArray);
+    int m_descendantIDs[m_numDescendants];
+    
+    PadToAlignment(iAlignment);
+} AttribClosestAnimDef;
+
+typedef struct(int iAlignment, quad cStart)
+{
+    int m_numAnimWeights;
+    int m_numEntries;
+    uquad m_pWeights <format=hex>;
+    uquad m_pRigChannels <format=hex>;
+    uquad m_pAnimChannels <format=hex>;
+
+    FSeek(cStart + m_pWeights);
+    float m_weights[m_numJointWeights];
+    
+    FSeek(cStart + m_pJointIndices);
+    short m_rigChannels[m_numJoints];
+    
+    FSeek(cStart + m_pUnkIndices);
+    short m_animChannels[m_numJoints];
+    
+    PadToAlignment(iAlignment);    
+} AttribClosestAnimDefAnimSet;
+
+typedef struct(int iAlignment, quad cStart)
+{ 
+    float m_fVar1;
+    bool m_updateTargetByDeltas;
+    bool m_worldSpaceTarget;
+    PadToAlignment(iAlignment);        
+} AttribHeadLookSetup;
+
+enum<int> LimitType
+{
+  NMSTANDARD_JOINTLIMITS = 0,
+};
+
+typedef struct
+{
+    Quaternion frame;
+    Quaternion offset;
+    Vector3 lower;
+    Vector3 uppder;
+    LimitType limitType;
+    PadToAlignment(16);
+} JointLimitsParam <read=ReadJointLimitsParam>;
+
+string ReadJointLimitsParam(JointLimitsParam &data)
+{
+    local string str = "";
+    SPrintf(str, "%s", EnumToString(data.limitType));
+    
+    return str;
+}
+
+typedef struct
+{
+    Vector3 hingeAxis;
+    bool isHinge;
+    PadToAlignment(4);
+    float weight;
+    float redundancyControlWeight;
+    bool isLimited;
+    bool applyHardLimits;
+    bool applySoftLimits;
+    PadToAlignment(4);
+    float hardLimitRepulsionFactor;
+    float softLimitSoftness;
+    
+    PadToAlignment(16);
+    JointLimitsParam limits;
+    PadToAlignment(16);
+    bool enabled;
+    PadToAlignment(16);
+} IKJointParam;
+
+typedef struct(int numJoints)
+{
+    local quad cStart = FTell();
+    
+    Vector3 pointingVector;
+    Vector3 worldUpAxis;
+    float bias;
+    bool minimiseRotation;
+    bool keepUpright;
+    PadToAlignment(4);
+    quad pPerJointParams <format=hex>;
+    
+    local quad cBak = FTell();
+    FSeek(cStart + pPerJointParams);
+    IKJointParam m_perJointParams[numJoints] <optimize=false>;
+    FSeek(cBak);
+} PointIKParams;
+
+typedef struct(int iAlignment, quad cStart)
+{
+    Vector3 m_endEffectorOffset;
+    int m_endJointIndex;
+    int m_rootJointIndex;
+    int m_numJoints;
+    PadToAlignment(iAlignment);
+    quad m_pParams <format=hex>;
+    
+    if (m_pParams)
+    {
+        local quad cBak = FTell();
+        FSeek(cStart + m_pParams);
+        PointIKParams  m_params(m_numJoints + 1);
+        FSeek(cBak);
+    }
+    
+    PadToAlignment(iAlignment);        
+} AttribHeadLookChain;
+
+typedef struct(int iAlignment, quad cStart)
+{
+    Vector3 m_worldUpAxis;
+    float m_fVar1;
+    bool m_keepUpright;
+    bool m_worldSpaceTarget;
+    bool m_applyJointLimits;
+    PadToAlignment(iAlignment);    
+} AttribGunAimSetup;
+
+typedef struct(int iAlignment, quad cStart)
+{     
+    Vector3 m_gunPivotOffset;
+    Vector3 m_gunBarrelOffset;
+    Vector3 m_gunPointingVector3;
+    Vector3 m_secondaryArmHingeAxis;
+    Vector3 m_primaryArmHingeAxis;
+    int m_spineRootJointIndex;
+    int m_secondaryWristJointIndex;
+    int m_primaryWristJointIndex;
+    float m_spineBias;
+    bool m_updateTargetByDeltas;
+    bool m_useSecondaryArm;
+    PadToAlignment(4);
+    int m_numAimJoints;
+    uquad m_pIkParams <format=hex>;
+    
+    if (m_pIkParams)
+    {
+        local quad cBak = FTell();
+        
+        FSeek(cStart + m_pIkParams);
+        PointIKParams m_ikParams(m_numAimJoints + 2);
+        FSeek(cBak);
+    }
+    
+    int m_gunJointIndex;
+    int m_gunBindJointIndex;
+    PadToAlignment(iAlignment);
+} AttribGunAimIKChain;
+
+typedef struct(int iAlignment, quad cStart)
+{
+    Vector3 m_upAxis;
+    float m_worldFootOrientationWeight;
+    float m_swivelOrientationWeight;
+    bool m_localReferenceFrame;
+    bool m_keepWorldFootOrientation;
+    
+    PadToAlignment(iAlignment);   
+} AttribHipsIKDef;
+
+typedef struct(int iAlignment, quad cStart)
+{
+    Vector3 m_leftKneeRotationAxis;
+    Vector3 m_rightKneeRotationAxis;
+    int m_leftLegIndex[4];
+    int m_rightLegIndex[4];
+    int m_hipsIndex;
+    bool m_useBallJoints;   
+    
+    PadToAlignment(iAlignment);   
+} AttribHipsIKAnimSetDef;
+
+typedef struct(int iAlignment, quad cStart)
+{
+    Quaternion m_orientation;
+    bool m_assumeSimpleHierarchy;
+    bool m_keepEndEffOrientation;
+    bool m_globalReferenceAxis;
+    bool m_updateTargetByDeltas;
+    bool m_worldSpaceTarget;
+    PadToAlignment(4);
+    int m_iVar1;
+    float m_fVar2;
+    int m_iVar3;
+    
+    PadToAlignment(iAlignment);    
+} AttribTwoBoneIKSetup;
+
+typedef struct(int iAlignment, quad cStart)
+{
+    Vector3 m_midJointRotAxis;
+    Vector3 m_midJointReferenceAxis;
+    int m_endJointIndex;
+    int m_midJointIndex;
+    int m_rootJointIndex;
+    int m_targetJointIndex;
+    bool m_globalReferenceAxis;
+    
+    PadToAlignment(iAlignment);    
+} AttribTwoBoneIKChain;
+
+typedef struct(int iAlignment, quad cStart)
+{
+    int m_upAxis;
+    bool m_lockVerticalMotion;
+    bool m_assumeSimpleHierarchy;
+    bool m_trackCharacterController;    
+    PadToAlignment(4);
+    float m_fVar4;
+    int m_iVar5;
+    
+    PadToAlignment(iAlignment);    
+} AttribLockFootSetup;
+
+typedef struct(int iAlignment, quad cStart)
+{ 
+    Vector3 m_kneeRotationAxis;
+    Vector3 m_ballRotationAxis;
+    Vector3 m_footLevelVector;
+    float m_lowerHeightBound;
+    float m_toeLowerHeightBound;
+    int m_jointIndex[5];
+    int m_footbalEventID;
+    float m_footPivotOffsetThreshold;
+    float m_catchUpSpeedFactor;
+    float m_snapToSourceDistance;
+    float m_straightestLegFactor;
+    float m_ankleLowerHeightBound;
+    bool m_fixToeGroundPenetration;
+    bool m_useBallJoint;
+    bool m_fixGroundPenetration;
+    bool m_fixFootOrientation;
+    
+    PadToAlignment(iAlignment);    
+} AttribLockFootChain;
+
+typedef struct(int iAlignment, quad cStart)
+{
+    uquad m_bundleID <format=hex>;
+    
+    PadToAlignment(iAlignment);
+} AttribPhysicsInit;
+
+enum<int> OperationCode
+{
+    OperationCode_Multiply,
+    OperationCode_Sum,
+    OperationCode_Divide,
+    OperationCode_Subtract,
+    OperationCode_Min,
+    OperationCode_Max,
+    OperationCode_ReRange,
+};
+
+enum<int> FunctionOperationCode
+{
+    FunctionOperationCode_Sin,
+    FunctionOperationCode_Cos,
+    FunctionOperationCode_Tan,
+    FunctionOperationCode_Exp,
+    FunctionOperationCode_Log,
+    FunctionOperationCode_Sqrt,
+    FunctionOperationCode_Abs,
+    FunctionOperationCode_Asin,
+    FunctionOperationCode_Acos,
+};
+
+typedef struct(int iAlignment, quad cStart)
+{
+    FunctionOperationCode m_operationCode;
+    
+    PadToAlignment(iAlignment);    
+} AttribFloatOperation;
+
+typedef struct(int iAlignment, quad cStart)
+{
+    float m_values[4];
+    
+    OperationCode m_operationCode;
+    
+    if (ReadByte(FTell()) != 0xCD)
+        float m_constantValue;    
+    
+    PadToAlignment(iAlignment);    
+} Attrib2FloatOperation;
+
+typedef struct(int iAlignment, quad cStart)
+{
+    Vector3 m_vectorRate;
+    float m_floatRateIncreasing;
+    float m_floatRateDecreasing;
+    float m_initialValueX;
+    float m_initialValueY;
+    float m_initialValueZ;
+    bool m_useInitValueOnInit;
+    bool m_smoothVelocity;
+    PadToAlignment(iAlignment);    
+} AttribSmoothFloat;
+
+typedef struct(int iAlignment, quad cStart)
+{
+    ubyte m_data[20];
+    
+    PadToAlignment(iAlignment);    
+} AttribRateOfChangeOperation;
+
+typedef struct(int iAlignment, quad cStart)
+{    
+    float m_min;
+    float m_max;
+    float m_interval;
+    int m_seed;
+    
+    PadToAlignment(iAlignment);    
+} AttribRandomFloat;
+
+typedef struct(int iAlignment, quad cStart)
+{    
+    int m_noise : 1;
+    int m_sawWave : 2;
+    int m_easeInEaseOut : 3;
+    float m_noiseSawFrequency;
+    float m_fVar3;
+    uquad m_pData1 <format=hex>;
+    uquad m_pData2 <format=hex>;
+    uquad m_pData3 <format=hex>;
+    
+    PadToAlignment(iAlignment);
+    
+    FSeek(cStart + m_pData1);
+    ubyte m_data1[28];
+    
+    FSeek(cStart + m_pData2);
+    ubyte m_data2[76];
+
+    FSeek(cStart + m_pData3);
+    ubyte m_data3[124];
+        
+    PadToAlignment(iAlignment);    
+} AttribNoiseGen;
+
+  enum<int> EvaluateMode
+  {
+    kEvalWhenActivating = 0,
+    kEvalEveryFrame = 1,
+    kEvalOnLoop = 2
+  };
+
+  enum<int> InputSelectionMethod
+  {
+    kClosest = 0,
+    kFloor,
+    kCeiling,
+    kWeightRampingInvalid
+  };
+
+typedef struct(int iAlignment, quad cStart)
+{
+    EvaluateMode m_evalMode;
+    InputSelectionMethod m_inputSelectionMethod;
+    
+    PadToAlignment(iAlignment);    
+} AttribSwitchDef;
+
+typedef struct(int iAlignment, quad cStart)
+{
+    Vector3 m_rayStart;
+    Vector3 m_rayDelta;
+    int m_upAxisIndex;
+    bool m_useLocalOrientation;
+        
+    PadToAlignment(iAlignment);    
+} AttribRayCastDef;
+
+typedef struct
+{
+    short m_sourceNodeID;
+    short m_sourcePinIndex;
+} CPConnection <read=ReadCPConnection>;
+
+enum <int> InitDestStartPointMethod
+{
+    INIT_DEST_USE_START_DURATION_FRACTION = 0,                
+    INIT_DEST_USE_EVENT_INDEX_AND_SYNC_ON_EVENT_FRACTION,     
+    INIT_DEST_USE_EVENT_INDEX_AND_USE_EVENT_FRACTION,         
+    INIT_DEST_SYNC_ON_EVENT_INDEX_AND_SYNC_ON_EVENT_FRACTION, 
+    INIT_DEST_SYNC_ON_EVENT_INDEX_AND_USE_EVENT_FRACTION,     
+    INIT_DEST_UNKNOWN = -1,
+};
+
+typedef struct
+{
+    short m_type;
+    short m_targetNodeID;
+    short m_subStateID;
+} StateMachineInitData <read=ReadStateMachineInitData>;
+
+string ReadStateMachineInitData( StateMachineInitData &data )
+{
+    local string c_res;
+
+    SPrintf(c_res, "(%d, %d)", data.m_targetNodeID, data.m_subStateID);
+
+    return c_res;
+}
+
+typedef struct
+{
+    local quad cStart = FTell();
+    
+    uquad m_pNodeInitDataArray <format=hex>;
+    short m_numNodeInitDatas;
+    
+    local quad cBak = FTell();
+    FSeek(cStart + m_pNodeInitDataArray);
+    uquad m_pInitData[m_numNodeInitDatas] <format=hex>;
+    
+    local int i = 0;
+    for (i = 0; i < m_numNodeInitDatas; i++)
+    {
+        FSeek(cStart + m_pInitData[i]);
+        StateMachineInitData m_nodeInitData[m_numNodeInitDatas] <optimize=false>;
+    }
+    FSeek(cBak);
+} NodeInitDataArrayDef;
+
+typedef struct(int iAlignment, quad cStart)
+{
+    float m_duration;
+    InitDestStartPointMethod m_destinationInitMethod;
+    float m_destinationStartFraction;
+    float m_destinationStartSyncEvent;
+    bool m_slerpTrajectoryPosition;
+    PadToAlignment(4);
+    BlendMode m_blendMode;
+    bool m_freezeSource;
+    bool m_freezeDest;
+    bool m_reversible;
+    PadToAlignment(4);
+    
+    CPConnection m_reverseInputCPConnection;
+    uquad m_pNodeInitData <format=hex>;
+    
+    if (m_pNodeInitData)
+    {
+        local quad cBak = FTell();
+        
+        FSeek(cStart + m_pNodeInitData);
+        NodeInitDataArrayDef m_nodeInitDataArrayDef;
+        FSeek(cBak);
+    }
+    PadToAlignment(iAlignment);    
+} AttribTransitDef;
+
+typedef struct(int iAlignment, quad cStart)
+{
+    float m_duration;
+    int m_destEventTrackOffset;
+    int m_destStartEventIndex;
+    bool m_usingDestStartEventIndex;
+    bool m_slerpTrajectoryPosition;
+    PadToAlignment(4);
+    BlendMode m_blendMode; 
+    bool m_reversible;
+    PadToAlignment(2);
+    CPConnection m_reverseInputCPConnection;
+    PadToAlignment(16);
+    uquad m_pNodeInitData <format=hex>;
+    
+    if (m_pNodeInitData)
+    {
+        local quad cBak = FTell();
+        
+        FSeek(cStart + m_pNodeInitData);
+        NodeInitDataArrayDef m_nodeInitDataArrayDef;
+        FSeek(cBak);
+    }
+    
+    PadToAlignment(iAlignment);      
+} AttribTransitSyncEventsDef;
+
+typedef struct(int iAlignment, quad cStart)
+{
+    bool m_useDeadReckoningWhenDeadBlending;
+    bool m_blendToDestinationPhysicsBones;
+    
+    PadToAlignment(iAlignment);        
+} AttribDeadBlendDef;
+
+typedef struct(int iAlignment, quad cStart)
+{
+    bool m_useDeadReckoning;
+    
+    PadToAlignment(iAlignment);        
+} AttribDeadBlendState;
+
+typedef struct(int iAlignment, quad cStart)
+{
+    short m_numWeightsX;
+    short m_numWeightsY;
+    bool m_wrapWeightsX;
+    bool m_wrapWeightsY;
+    uquad m_pWeightsX <format=hex>;
+    uquad m_pWeightsY <format=hex>;
+    
+    FSeek(cStart + m_pWeightsX);
+    float m_weights[m_numWeightsX];
+    
+    FSeek(cStart + m_pWeightsY);
+    float m_weights[m_numWeightsY];
+
+    PadToAlignment(iAlignment);
+} AttribBlendNXMDef;
+
+typedef struct
+{
+    int m_messageID;
+    ushort m_stateMachineNodeID;
+    PadToAlignment(4);
+} EmittedMessageMap <read=ReadEmittedMessageMap>;
+
+string ReadEmittedMessageMap(EmittedMessageMap &data)
+{
+    local string str = "";
+    
+    SPrintf(str, "(%d, %d)", data.m_messageID, data.m_stateMachineNodeID);
+   
+    return str;
+}
+
+enum<ubyte> EmitRequestActionType
+{
+    Action_Clear,
+    Action_Set,
+};
+
+typedef struct(int iAlignment, quad cStart)
+{
+    int m_numEmittedMessage;
+    PadToAlignment(8);
+    uquad m_pEmittedMessages <format=hex>;
+    uquad m_pActionTypes <format=hex>;
+    PadToAlignment(iAlignment);
+    FSeek(cStart + m_pEmittedMessages);
+    EmittedMessageMap m_emittedMessages[m_numEmittedMessage] <optimize=false>;
+    
+    FSeek(cStart + m_pActionTypes);
+    bool m_messageUsed[m_numEmittedMessage];   
+    
+    PadToAlignment(iAlignment);        
+} AttribEmittedMessageMap;
+
+typedef struct(int iAlignment, quad cStart)
+{
+    Vector3 m_up;
+    int m_numLimbs;
+    
+    PadToAlignment(iAlignment);    
+} AttribBasicUnevenTerrainSetup;
+
+typedef struct
+{
+    Vector3 m_kneeRotationAxis;
+    int m_channelIDs[5];
+    int m_numFootJoints;
+} ChainData;
+
+typedef struct(int iAlignment, quad cStart)
+{
+    int m_hipsChannelID;
+    bool m_hipsHeightControlEnable;
+    bool m_hipsPosVelLimitEnable;
+    bool m_hipsPosAccelLimitEnable;
+    PadToAlignment(4);
+    
+    float m_hipsPosVelLimit;
+    float m_hipsPosAccelLimit;
+    float m_straightestLegFactor;
+    bool m_endJointPosVelLimitEnable;
+    bool m_endJointPosAccelLimitEnable;
+    bool m_endJointAngVelLimitEnable;
+    bool m_endJointAngAccelLimitEnable;
+    float m_endJointPosVelLimit;
+    float m_endJointPosAccelLimit;
+    float m_endJointAngVelLimit;
+    float m_endJointAngAccelLimit;
+    
+    bool m_useGroundPenetrationFixup;
+    bool m_useTrajectorySlopeAlignment;
+    PadToAlignment(4);
+    float m_footAlignToSurfaceAngleLimit;
+    float m_footAlignToSurfaceMaxSlopeAngle;
+    float m_footLiftingHeightLimit;
+    int m_numLimbs;
+    PadToAlignment(16);
+
+    uquad m_pChainInfo[2] <format=hex>;
+    
+    PadToAlignment(16);
+    local int i = 0;
+    for (i = 0; i < m_numLimbs; i++)
+    {
+        FSeek(cStart + m_pChainInfo[i]);
+        ChainData m_chainInfo;
+    }
+    
+    PadToAlignment(iAlignment);    
+} AttribBasicUnevenTerrainChain;
+
+typedef struct(int iAlignment, quad cStart)
+{
+    float m_predictionSlopeAngleLimit;
+    float m_predictionLateralAngleLimit;
+    float m_redictionCloseFootbaseTolFrac;
+    int m_hipsCount;
+    PadToAlignment(8);
+    uquad m_pEventTrackIDs[m_hipsCount] <format=hex>;
+    
+    local int i = 0;
+    for (i = 0; i < m_hipsCount; i++)
+    {
+        FSeek(cStart + m_pEventTrackIDs[i]);
+        uint m_eventTrackID;
+    }
+    
+    PadToAlignment(iAlignment);    
+} AttribPredictiveUnevenTerrainPredictionDef;
+
+typedef struct(int iAlignment, quad cStart)
+{
+    int m_parentIndex;
+    bool m_outputInWorldSpace;
+    
+    PadToAlignment(iAlignment);    
+} AttribPhysicsInfoDef;
+
+typedef struct
+{
+    Vector4 leftUp;
+    Vector4 rightUp;
+    int leftIndex;
+    int rightIndex;
+    int leftUnk;
+    int rightUnk;
+} AdvancedMapping <read=ReadAdvancedMapping>;
+
+string ReadAdvancedMapping(AdvancedMapping &data)
+{
+    string str = "";
+    
+    SPrintf(str, "(joint=%d, mirro=%d)", data.leftIndex, data.rightIndex);
+    
+    return str;
+}
+
+typedef struct
+{
+    int m_left;
+    int m_right;    
+} SimpleMapping <read=ReadSimpleMapping>;
+
+string ReadSimpleMapping(SimpleMapping &data)
+{
+    local string str = "";
+    
+    SPrintf(str, "(first=%d, second=%d)", data.m_left, data.m_right);
+    
+    return str;
+}
+
+typedef struct(int iAlignment, quad cStart)
+{
+    int m_axis;
+    int m_numBoneMappings;
+    uquad m_pBoneMappings <format=hex>;
+    int m_numTrackIds;
+    PadToAlignment(8);
+    uquad m_pTrackIds <format=hex>;
+    int m_numEventIds;
+    PadToAlignment(8);    
+    uquad m_pEventIds <format=hex>;
+    int m_numBones;
+    PadToAlignment(8);    
+    uquad m_pQuatOffsets <format=hex>;
+    uquad m_pUnkIndices <format=hex>;
+    
+    FSeek(cStart + m_pBoneMappings);
+    AdvancedMapping m_boneMappings[m_numBoneMappings];
+    
+    FSeek(cStart + m_pQuatOffsets);
+    Vector4 m_quatOffsets[m_numBones];
+    
+    FSeek(cStart + m_pUnkIndices);
+    int m_unkIndices[m_numBones];
+    
+    if (m_numEventIds > 0)
+    {    
+        FSeek(cStart + m_pEventIds);
+        SimpleMapping m_eventIds[m_numEventIds];
+    }
+    
+    if (m_numTrackIds > 0)
+    {
+        FSeek(cStart + m_pTrackIds);
+        SimpleMapping m_trackIds[m_numTrackIds];
+    }
+    
+    PadToAlignment(iAlignment);
+} AttribAnimMirroredMapping;
+
+typedef struct(int iAlignment, quad cStart)
+{
+    uquad m_bundleID <format=hex>;
+    
+    PadToAlignment(iAlignment);
+} AttribCharacterControllerDef;
+
+typedef struct(int iAlignment, quad cStart)
+{
+    short m_trajectoryBoneIndex;
+    short m_numChannelAlphas;
+    PadToAlignment(8);
+    uquad m_pChannelAlphas <format=hex>;
+    
+    if (m_numChannelAlphas > 0)
+    {    
+        FSeek(cStart + m_pChannelAlphas);
+        float m_channelAlphas[m_numChannelAlphas + 1];
+    }
+        
+    PadToAlignment(iAlignment);    
+    
+} AttribFeatherBlend2ChannelAlphas;
+
+typedef struct(int iAlignment, quad cStart)
+{
+    bool m_matchEvents;
+    
+    PadToAlignment(iAlignment);    
+} AttribBlendFlags;
+
+
+enum<int> ElementType
+{
+    NMP_ELEMENT_TYPE_INT = 0,
+    NMP_ELEMENT_TYPE_FLOAT,
+    NMP_ELEMENT_TYPE_VEC3,
+    NMP_ELEMENT_TYPE_POSVEL,
+    NMP_ELEMENT_TYPE_ANGVEL,
+    NMP_ELEMENT_TYPE_VEC4,
+    NMP_ELEMENT_TYPE_QUAT,
+    NMP_ELEMENT_TYPE_QUAT_COMP,
+    NMP_ELEMENT_TYPE_POS_COMP,
+    NMP_ELEMENT_TYPE_MATRIX,
+    NMP_ELEMENT_TYPE_MAX,
+    NMP_ELEMENT_TYPE_USER = 0xFFFF0000
+};
+
+typedef struct
+{
+    ElementType m_type;
+    int m_size;
+    int m_alignment;
+} ElementDescriptor <read=ReadElementDescriptor>;
+
+string ReadElementDescriptor(ElementDescriptor &data)
+{
+    local string str = "";
+    SPrintf(str, "(%s, %d, %d)", EnumToString(data.m_type), data.m_size, data.m_alignment);
+    
+    return str;
+}
+
+typedef struct(int iAlignment, quad cStart)
+{   
+    uquad m_pTransformBuffer <format=hex>;
+    
+    FSeek(cStart + m_pTransformBuffer);
+    local quad pStart = FTell();
+    
+    Format m_memReqs;
+    int m_length;
+    bool m_full;
+    PadToAlignment(4);
+    int m_numElements;
+    PadToAlignment(8);
+    uquad m_pElementDescriptors <format=hex>;
+    uquad m_ppData <format=hex>;
+    uquad m_pUsedFlags <format=hex>;
+    
+    FSeek(pStart + m_pElementDescriptors);
+    ElementDescriptor m_elementDescriptors[m_numElements];
+    
+    FSeek(pStart + m_ppData);
+    uquad m_pData[m_numElements] <format=hex>;
+    
+    local int i = 0;
+    for (i = 0; i < m_numElements; i++)
+    { 
+        FSeek(pStart + m_pData[i]);
+        CreateElementDataEntry(m_elementDescriptors[i].m_type, m_length);
+    }
+    
+    FSeek(pStart + m_pUsedFlags);    
+    UsedFlags m_usedFlags;    
+} AttribTransformsDataBuffer;
+
+typedef struct(int iAlignment, quad cStart)
+{     
+    int m_rigSize;
+    int m_numJointLimits;
+    uquad m_ppJointLimits <format=hex>;
+    uquad m_pJointLimitsData <format=hex>;
+    
+    FSeek(cStart + m_ppJointLimits);
+    uquad m_pJointLimits[m_rigSize] <format=hex>;
+
+    FSeek(cStart + m_pJointLimitsData);
+    JointLimitsParam m_jointLimits[m_numJointLimits] <optimize=false>;
+} AttribJointLimits;
+
+void CreateAttribTypeData(AttribType m_attribType, quad pDataStart, int iDataSize, int iAlignment)
+{
+    switch ( m_attribType )
+	{
+	default:
+		if ( iDataSize > 9 )
+			ubyte m_data[iDataSize - 8];
+		break;
+	case ATTRIB_TYPE_BOOL:
+		AttribBool m_data(iAlignment, pDataStart);
+		break;
+	case ATTRIB_TYPE_UINT:
+		AttribUInt m_data(iAlignment, pDataStart);
+		break;
+	case ATTRIB_TYPE_FLOAT:
+		AttribFloat m_data(iAlignment, pDataStart);
+		break;
+	case ATTRIB_TYPE_INT:
+		AttribInt m_data(iAlignment, pDataStart);
+		break;
+	case ATTRIB_TYPE_VECTOR3:
+		AttribVector3 m_data(iAlignment, pDataStart);
+		break;
+	case ATTRIB_TYPE_BOOL_ARRAY:
+		AttribBoolArray m_data(iAlignment, pDataStart);
+		break;
+	case ATTRIB_TYPE_INT_ARRAY:
+		AttribIntArray m_data(iAlignment, pDataStart);
+		break;
+	case ATTRIB_TYPE_UINT_ARRAY:
+		AttribUIntArray m_data(iAlignment, pDataStart);
+		break;                
+	case ATTRIB_TYPE_FLOAT_ARRAY:
+		AttribFloatArray m_data(iAlignment, pDataStart);
+		break;
+	case ATTRIB_TYPE_PLAYBACK_POS:
+		AttribPlaybackPos m_data(iAlignment, pDataStart);
+		break;
+    case ATTRIB_TYPE_TRANSFORM_BUFFER:
+        AttribTransformsDataBuffer m_data(iAlignment, pDataStart);
+		break;
+	case ATTRIB_TYPE_TRAJECTORY_DELTA_TRANSFORM:
+		AttribTrajectoryDeltaTransform m_data(iAlignment, pDataStart);
+		break;
+	case ATTRIB_TYPE_RIG:
+		AttribRig m_data(iAlignment, pDataStart);
+		break;
+	case ATTRIB_TYPE_CLOSEST_ANIM_DEF:
+		if ( iDataSize > 8 )
+			ubyte m_data[iDataSize - 8];
+		break;
+	case ATTRIB_TYPE_CLOSEST_ANIM_DEF_ANIM_SET:
+		AttribClosestAnimDefAnimSet m_data(iAlignment, pDataStart);
+		break;
+	case ATTRIB_TYPE_STATE_MACHINE_DEF:
+		AttribStateMachineDef m_data(iAlignment, pDataStart);
+		break;
+	case ATTRIB_TYPE_SOURCE_ANIM:
+		AttribSourceAnim m_data(iAlignment, pDataStart);
+		break;
+	case ATTRIB_TYPE_SOURCE_EVENT_TRACKS:
+		AttribSourceEventTrack m_data(iAlignment, pDataStart);
+		break;
+	case ATTRIB_TYPE_HEAD_LOOK_SETUP:
+		AttribHeadLookSetup m_data(iAlignment, pDataStart);
+		break;
+    case ATTRIB_TYPE_CHARACTER_CONTROLLER_DEF:
+        AttribCharacterControllerDef m_data(iAlignment, pDataStart);
+		break;
+	case ATTRIB_TYPE_HEAD_LOOK_CHAIN:
+		AttribHeadLookChain m_data(iAlignment, pDataStart);
+		break;
+	case ATTRIB_TYPE_GUN_AIM_SETUP:
+		AttribGunAimSetup m_data(iAlignment, pDataStart);
+		break;
+	case ATTRIB_TYPE_GUN_AIM_IK_CHAIN:
+		AttribGunAimIKChain m_data(iAlignment, pDataStart);
+		break;
+	case ATTRIB_TYPE_HIPS_IK_DEF:
+		AttribHipsIKDef m_data(iAlignment, pDataStart);
+		break;
+	case ATTRIB_TYPE_HIPS_IK_ANIM_SET_DEF:
+		AttribHipsIKAnimSetDef m_data(iAlignment, pDataStart);
+		break;
+	case ATTRIB_TYPE_TWO_BONE_IK_SETUP:
+		AttribTwoBoneIKSetup m_data(iAlignment, pDataStart);
+		break;
+	case ATTRIB_TYPE_TWO_BONE_IK_CHAIN:
+		AttribTwoBoneIKChain m_data(iAlignment, pDataStart);
+		break;
+	case ATTRIB_TYPE_LOCK_FOOT_SETUP:
+		AttribLockFootSetup m_data(iAlignment, pDataStart);
+		break;
+	case ATTRIB_TYPE_LOCK_FOOT_CHAIN:
+		AttribLockFootChain m_data(iAlignment, pDataStart);
+		break;         
+	case ATTRIB_TYPE_PHYSICS_INITIALISATION:
+		AttribPhysicsInit m_data(iAlignment, pDataStart);
+		break;
+	case ATTRIB_TYPE_FLOAT_OPERATION:
+		AttribFloatOperation m_data(iAlignment, pDataStart);
+		break;
+	case ATTRIB_TYPE_2_FLOAT_OPERATION:
+		Attrib2FloatOperation m_data(iAlignment, pDataStart);
+		break;
+	case ATTRIB_TYPE_SMOOTH_FLOAT_OPERATION:
+		AttribSmoothFloat m_data(iAlignment, pDataStart);
+		break;
+	case ATTRIB_TYPE_RATE_OF_CHANGE_OPERATION:
+		AttribRateOfChangeOperation m_data(iAlignment, pDataStart);
+		break;
+	case ATTRIB_TYPE_RANDOM_FLOAT_DEF:
+		AttribRandomFloat m_data(iAlignment, pDataStart);
+		break;
+	case ATTRIB_TYPE_NOISE_GEN_DEF:
+		AttribNoiseGen m_data(iAlignment, pDataStart);
+		break;
+	case ATTRIB_TYPE_SWITCH_DEF:
+		AttribSwitchDef m_data(iAlignment, pDataStart);
+		break;
+	case ATTRIB_TYPE_RAY_CAST_DEF:
+		AttribRayCastDef m_data(iAlignment, pDataStart);
+		break;
+	case ATTRIB_TYPE_TRANSIT_DEF:
+		AttribTransitDef m_data(iAlignment, pDataStart);
+		break;
+	case ATTRIB_TYPE_TRANSIT_SYNC_EVENTS_DEF:
+		AttribTransitSyncEventsDef m_data(iAlignment, pDataStart);
+		break;
+    case ATTRIB_TYPE_DEAD_BLEND_DEF:
+       	AttribDeadBlendDef m_data(iAlignment, pDataStart);
+		break; 
+	case ATTRIB_TYPE_DEAD_BLEND_STATE:
+		AttribDeadBlendState m_data(iAlignment, pDataStart);
+		break;
+    case ATTRIB_TYPE_FEATHER_BLEND2_CHANNEL_ALPHAS:
+        AttribFeatherBlend2ChannelAlphas m_data(iAlignment, pDataStart);
+		break;
+	case ATTRIB_TYPE_EMITTED_MESSAGE_MAP:
+		AttribEmittedMessageMap m_data(iAlignment, pDataStart);
+		break;
+	case ATTRIB_TYPE_BLEND_NXM_DEF:
+		AttribBlendNXMDef m_data(iAlignment, pDataStart);
+		break;
+    case ATTRIB_TYPE_ANIM_MIRRORED_MAPPING:
+        AttribAnimMirroredMapping m_data(iAlignment, pDataStart);
+		break;
+	case ATTRIB_TYPE_BASIC_UNEVEN_TERRAIN_SETUP:
+		AttribBasicUnevenTerrainSetup m_data(iAlignment, pDataStart);
+		break;
+	case ATTRIB_TYPE_BASIC_UNEVEN_TERRAIN_CHAIN:
+		AttribBasicUnevenTerrainChain m_data(iAlignment, pDataStart);
+		break;
+	case ATTRIB_TYPE_PREDICTIVE_UNEVEN_TERRAIN_PREDICTION_DEF:
+		AttribPredictiveUnevenTerrainPredictionDef m_data(iAlignment, pDataStart);
+		break;
+	case ATTRIB_TYPE_PHYSICS_INFO_DEF:
+		AttribPhysicsInfoDef m_data(iAlignment, pDataStart);
+		break;
+    case ATTRIB_TYPE_BLEND_FLAGS:
+        AttribBlendFlags m_data(iAlignment, pDataStart);
+		break;
+    case ATTRIB_TYPE_JOINT_LIMITS:
+        AttribJointLimits m_data(iAlignment, pDataStart);
+        break;
+	}    
+}

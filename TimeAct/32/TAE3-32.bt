@@ -1,0 +1,237 @@
+//------------------------------------------------
+//--- 010 Editor v7.0.2 Binary Template
+//
+//      File: TAE3.bt
+//   Authors: TKGP
+//   Version: 1.0
+//   Purpose: DS3 animation events
+//  Category: Dark Souls
+// File Mask: *.tae
+//  ID Bytes: 54 41 45 20 00 00 00 00 0C 00 01 00
+//   History: 
+//------------------------------------------------
+
+LittleEndian();
+
+#include "TAE3_EventDataDS2-32.bt"
+
+typedef struct {
+    char magic[4]; Assert(magic == "TAE ");
+    byte bigEndian; Assert(bigEndian == 0);
+    byte unk05; Assert(unk05 == 0);
+    byte unk06; Assert(unk06 == 0);
+    byte is64Bit; Assert(is64Bit == 0);
+    // It's really an int, I checked
+    int version <format=hex>; Assert(version == 0x1000C || version == 0x1000D);
+    int fileSize <format=hex>;
+    uint32 unk10 <format=hex>; Assert(unk10 == 0x40);
+    uint32 unk18; Assert(unk18 == 1);
+    uint32 unk20 <format=hex>; Assert(unk20 == 0x50);
+    uint32 unk28 <format=hex>; //Assert(unk28 == 0x80);
+    quad unk30 <format=hex>;
+    quad unk38; Assert(unk38 == 0);
+    quad unk40; Assert(unk40 == 0);
+    quad unk48; Assert(unk48 == 0);
+    byte flags[8] <format=hex>; // 1 0 1 2 2 1 1 1
+    quad unk58; Assert(unk58 == 0);
+    int fileID;
+    int animCount;
+    uint32 animsOffset <format=hex, bgcolor=cLtBlue>;
+    uint32 animGroupsOffset <format=hex, bgcolor=cLtGreen>;
+    uint32 unk60;
+    uint32 animCount2; Assert(animCount2 == animCount);
+    quad firstAnimOffset <format=hex>;
+    uint32 unk80; Assert(unk80 == 1);
+    uint32 unk88 <format=hex>; Assert(unk88 == 0x80);
+    quad unk90; Assert(unk90 == 0);
+    int fileID2; Assert(fileID2 == fileID);
+    int fileID3; Assert(fileID3 == fileID);
+    uint32 unk98 <format=hex>; Assert(unk98 == 0x50);
+    quad unkA0; Assert(unkA0 == 0);
+    uint32 unkA8 <format=hex>; Assert(unkA8 == 0xA0);
+    uint32 unkB0 <format=hex>;
+    uint32 unkB8 <format=hex>;
+    uint32 skeletonNameOffset <format=hex, bgcolor=cRed>;
+    uint32 sibNameOffset <format=hex, bgcolor=cRed>;
+    if (skeletonNameOffset != 0 && sibNameOffset != 0) {
+        uint32 unkC0 <format=hex>; Assert(unkC0 == 0);
+        uint32 unkC4 <format=hex>; Assert(unkC4 == 0);
+        uint32 unkC8 <format=hex>; Assert(unkC8 == 0);
+    }
+    
+    local uint32 pos <hidden=true> = FTell();
+    if (skeletonNameOffset != 0) {
+        FSeek(skeletonNameOffset);
+        wstring skeletonName <bgcolor=cRed>;
+        //Padding padding1(0x10) <bgcolor=cRed>;
+    }
+    if (sibNameOffset != 0) {
+        FSeek(sibNameOffset);
+        wstring sibName <bgcolor=cRed>;
+        //Padding padding2(0x10) <bgcolor=cRed>;
+    }
+    FSeek(pos);
+} Header <bgcolor=cLtRed>;
+
+
+typedef struct {
+    uint32 startTimeOffset <format=hex, bgcolor=cAqua>; Assert(startTimeOffset != 0);
+    uint32 endTimeOffset <format=hex, bgcolor=cAqua>;
+    uint32 eventDataOffset <format=hex>;
+    
+    uint32 padding_16 <hidden=true>;
+    local quad pos = FTell();
+    FSeek(startTimeOffset);
+    float startTime <bgcolor=cAqua>;
+    FSeek(endTimeOffset);
+    float endTime <bgcolor=cAqua>;
+    FSeek(eventDataOffset);
+    EventData data;
+    FSeek(pos);
+} Event <optimize=false>;
+
+
+typedef struct {
+    uint32 count;
+    uint32 offsetsOffset <format=hex>;
+    uint32 groupOffset <format=hex>;
+    uint32 unk18 <hidden=false, fgcolor=cGray>; Assert(unk18 == 0);
+    
+    local quad pos = FTell();
+    FSeek(groupOffset);
+    uint32 eventType <bgcolor=cSilver>;
+    quad unkFromOff <hidden=false, bgcolor=cSilver, fgcolor=cSilver>; //Assert(zero == 0);
+    if (count > 0)
+        int eventOffsets[count] <format=hex, bgcolor=cSilver>;
+    //Padding padding(0x10) <bgcolor=cSilver>;
+    FSeek(pos);
+} EventGroup <bgcolor=cGray, optimize=false>;
+
+
+typedef struct (byte hasFilename) {
+    uint32 reference;
+    uint32 fileNameOffsetOffset <format=hex>; //Assert(fileNameOffsetOffset == FTell());
+    uint32 padding_07 <hidden=true>; Assert(padding_07 == 0);
+    uint32 padding_08 <hidden=true>; Assert(padding_08 == 0);
+    uint32 fileNameOffset <format=hex>;
+    int unk18;
+    int unk1C;
+    //quad unk20 <hidden=true>; Assert(unk20 == 0);
+    //quad unk28 <hidden=true>; Assert(unk28 == 0);
+    
+    if (true || hasFilename) {
+        local uint32 pos <hidden=false> = FTell();
+        FSeek(fileNameOffset);
+        wstring fileName;
+        FSeek(pos);
+    }
+    else {
+        local uint32 pos <hidden=false> = FTell();
+        FSeek(pos);
+    }
+} AnimFile <bgcolor=cLtYellow>;
+
+
+typedef struct {
+    local quad padding_03 <hidden=true> = FTell();
+    uint32 padding_10 <hidden=true>;
+    uint32 eventHeadersOffset <format=hex>;
+    local quad padding_04 <hidden=true> = FTell();
+    uint32 padding_11 <hidden=true>;
+    uint32 eventGroupsOffset <format=hex, bgcolor=cGray>;
+    local quad padding_05 <hidden=true> = FTell();
+    uint32 padding_12 <hidden=true>;
+    uint32 timesOffset <format=hex, bgcolor=cAqua>;
+    uint32 animFileOffset <format=hex, bgcolor=cLtYellow>;
+    int unk2C <hidden=true, fgcolor=cPurple>; Assert(unk2C == 0);
+    local quad reset_01 <hidden=true> = FTell();
+    FSeek(padding_03);
+    int eventCount;
+    FSeek(padding_04);
+    int eventGroupCount;
+    FSeek(padding_05);
+    int timeCount;
+    FSeek(reset_01);
+    uint32 padding_06 <hidden=true>;
+    uint32 padding_13 <hidden=true>;
+    uint32 padding_14 <hidden=true>;
+    uint32 padding_15 <hidden=true>;
+    
+    local quad pos <hidden=true> = FTell();
+    if (eventCount > 0) {
+        FSeek(eventHeadersOffset);
+        struct {
+            Event events[eventCount];
+        } events;
+    }
+    if (eventGroupCount > 0) {
+        FSeek(eventGroupsOffset);
+        struct {
+            EventGroup eventGroups[eventGroupCount];
+        } eventGroups;
+    }
+    FSeek(animFileOffset);
+    AnimFile animFile(eventCount > 0);
+    FSeek(pos);
+} AnimData <bgcolor=cPurple>;
+
+
+typedef struct {
+    uint32 id;
+    uint32 animOffset <format=hex, bgcolor=cPurple>;
+    uint32 padding_01 <hidden=true>;
+    uint32 padding_02 <hidden=true>;
+
+    local uint32 pos <hidden=true> = FTell();
+    FSeek(animOffset);
+    AnimData animData;
+    FSeek(pos);
+} Animation <read=ReadAnimation, bgcolor=cLtBlue, optimize=false>;
+
+wstring ReadAnimation(Animation& anim) {
+    string str;
+    SPrintf(str, "%6i %i %6i %6i ", anim.id, anim.animData.animFile.reference, anim.animData.animFile.unk18, anim.animData.animFile.unk1C);
+    return str + anim.animData.animFile.fileName;
+}
+
+
+typedef struct {
+    int startID;
+    int endID;
+    uint32 animOffset <format=hex>;
+    uint32 padding_20 <hidden=true>; 
+} AnimGroup <read=ReadAnimGroup>;
+
+string ReadAnimGroup(AnimGroup& group) {
+    string str;
+    SPrintf(str, "%6i - %6i : %4X", group.startID, group.endID, group.animOffset);
+    return str;
+}
+
+
+typedef struct {
+    uint32 groupCount;
+    uint32 groupsOffset <format=hex>;
+    
+    if (groupCount > 0) {
+        local quad pos <hidden=true> = FTell();
+        FSeek(groupsOffset);
+        AnimGroup animGroups[groupCount];
+        FSeek(pos);
+    }
+} AnimGroups <read=ReadAnimGroups, bgcolor=cLtGreen>;
+
+string ReadAnimGroups(AnimGroups& groups) {
+    string str;
+    SPrintf(str, "[%3i] : %4X", groups.groupCount, groups.groupsOffset);
+    return str;
+}
+
+
+Header header;
+FSeek(header.animsOffset);
+struct {
+    Animation animations[header.animCount];
+} animations;
+FSeek(header.animGroupsOffset);
+AnimGroups animGroups;

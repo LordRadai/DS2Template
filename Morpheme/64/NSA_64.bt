@@ -1,0 +1,413 @@
+//------------------------------------------------
+//--- 010 Editor v9.0.2 Binary Template
+//
+//      File: 
+//   Authors: 
+//   Version: 
+//   Purpose: 
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+LittleEndian();
+
+#include "Core.bt"
+
+enum <byte> AnimType
+{
+    ANIM_TYPE_MBA,
+    ANIM_TYPE_ASA,
+    ANIM_TYPE_NSA,
+    ANIM_TYPE_QSA
+};
+
+typedef struct
+{
+    int64 m_size;
+    int64 m_alignment;
+} Format <read=ReadFormat>;
+
+string ReadFormat(Format& data)
+{
+    local string str = "";
+    
+    SPrintf(str, "(%d, %d)", data.m_size, data.m_alignment);
+    
+    return str;
+}
+
+typedef struct
+{
+    SetForeColor(cAqua);
+    float m_min[3];
+    float m_scaledExtent[3];
+} QuantisationScaleAndOffsetVec3 <read=ReadQuantisationScaleAndOffsetVec3>;
+
+string ReadQuantisationScaleAndOffsetVec3(QuantisationScaleAndOffsetVec3 &deqFactor)
+{
+    string ret;
+
+    SPrintf(ret, "(%.3f, %.3f, %.3f), (%.3f, %.3f, %.3f)\n", deqFactor.m_min[0], deqFactor.m_min[1], deqFactor.m_min[2], deqFactor.m_scaledExtent[0], deqFactor.m_scaledExtent[1], deqFactor.m_scaledExtent[2]);
+
+    return ret;
+}
+
+typedef struct
+{
+    short m_x;
+    short m_y;
+    short m_z;
+} Vec3Short <read=ReadVec3Short>;
+
+string ReadVec3Short( Vec3Short &vec )
+{
+    string ret;
+
+    SPrintf(ret, "(%d, %d, %d)\n", vec.m_x, vec.m_y, vec.m_z);
+
+    return ret;
+}
+
+typedef struct
+{
+    short m_numChannels <fgcolor=cGreen>;
+    short m_animChannels[m_numChannels] <fgcolor=cLtGreen>;
+} CompToAnimChannelMap <read=ReadCompToAnimChannelMap>;
+
+string ReadCompToAnimChannelMap( CompToAnimChannelMap &p )
+{
+    string ret;
+
+    SPrintf(ret, "%d\n", p.m_numChannels);
+
+    return ret;
+}
+
+typedef struct
+{
+    local quad startPos = FTell();
+
+    SetForeColor(cLtRed);
+    int m_unchangingPosNumChannels;
+    int m_unchangingQuatNumChannels;
+    QuantisationScaleAndOffsetVec3 m_unchangingPosQuantisationInfo;
+    QuantisationScaleAndOffsetVec3 m_unchangingQuatQuantisationInfo;
+    quad m_pUnchangingPosData <format=hex>;
+    quad m_pUnchangingQuatData <format=hex>;
+    
+    if  ( m_unchangingPosNumChannels > 0 && m_pUnchangingPosData != 0 )
+    {   
+        
+        FSeek(startPos + m_pUnchangingPosData);
+        Vec3Short m_unchangingPosData[m_unchangingPosNumChannels];
+    }
+
+    if  ( m_unchangingQuatNumChannels > 0 && m_pUnchangingQuatData != 0 )
+        FSeek(startPos + m_pUnchangingQuatData);
+        Vec3Short m_unchangingQuatData[m_unchangingQuatNumChannels];
+
+    PadToAlignment(16);
+
+} UnchangingDataNSA;
+
+typedef struct
+{
+    int m_x : 11;
+    int m_y : 11;
+    int m_z : 10;
+} SampledPosKey <read=ReadSampledPosKey>;
+
+string ReadSampledPosKey( SampledPosKey &sampleData )
+{
+    string ret;
+
+    SPrintf(ret, "(%d, %d, %d)\n", sampleData.m_x, sampleData.m_y, sampleData.m_z);
+
+    return ret;
+}
+
+typedef struct
+{
+    SetForeColor(cPurple);
+    
+    short m_data[3];
+} SampledQuatKeyTQA <read=ReadSampledQuatKeyTQA>;
+
+string ReadSampledQuatKeyTQA(SampledQuatKeyTQA &data)
+{
+    local string str = "";
+    
+    SPrintf(str, "(%d, %d, %d)", data.m_data[0], data.m_data[1], data.m_data[2]);
+    
+    return str;
+}
+
+int GetDeqInfoCount(int bone_count) 
+{
+    local int multiple = bone_count / 4;
+
+    if(bone_count % 4 != 0) 
+        multiple = multiple + 1;
+
+    return multiple * 4;
+};
+
+typedef struct
+{
+    SetForeColor(cLtRed);
+
+    byte m_init[3];
+    byte m_factor_idx[3];
+} QuantisationMeanAndSetVec3 <read=ReadQuantisationMeanAndSetVec3>;
+
+string ReadQuantisationMeanAndSetVec3(QuantisationMeanAndSetVec3 &deqInfo)
+{
+    string ret;
+
+    SPrintf(ret, "(%d, %d, %d), (%d, %d, %d)\n", deqInfo.m_init[0], deqInfo.m_init[1], deqInfo.m_init[2], deqInfo.m_factor_idx[0], deqInfo.m_factor_idx[1], deqInfo.m_factor_idx[2]);
+
+    return ret;
+}
+
+typedef struct
+{
+    local quad pStart = FTell();
+    SetForeColor(cLtGreen);
+
+    int m_numSectionAnimFrames;
+    int m_sampledPosNumChannels;
+    int m_sampledQuatNumChannels;
+    PadToAlignment(8);
+    quad m_pSampledPosData <format=hex>;
+    quad m_pSampledPosQuantisationData <format=hex>;
+    quad m_pSampledQuatData <format=hex>;
+    quad m_pSampledQuatQuantisationData <format=hex>;
+    
+    if ( m_pSampledPosData != 0 )
+    {
+        FSeek(pStart + m_pSampledPosData);
+        SampledPosKey m_sampledPosData[m_numSectionAnimFrames * m_sampledPosNumChannels];    
+    }
+
+    if ( m_pSampledPosQuantisationData != 0 )
+    {
+        FSeek(pStart + m_pSampledPosQuantisationData);
+        QuantisationMeanAndSetVec3 m_sampledPosQuantisationData[GetDeqInfoCount(m_sampledPosNumChannels)];
+    }
+
+    if ( m_pSampledQuatData != 0 )
+    {
+        FSeek(pStart + m_pSampledQuatData);
+        SampledQuatKeyTQA m_sampledQuatData[m_numSectionAnimFrames * m_sampledQuatNumChannels];
+    }
+
+    if ( m_pSampledQuatQuantisationData != 0 )
+    {
+        FSeek(pStart + m_pSampledQuatQuantisationData);
+        QuantisationMeanAndSetVec3 m_sampledQuatQuantisationData[GetDeqInfoCount(m_sampledQuatNumChannels)];
+    }
+
+    PadToAlignment(16);
+
+} AnimSectionNSA;
+
+enum<int> TrajType
+{
+    TRAJ_TYPE_UNDEFINED = -1,
+    TRAJ_TYPE_MBA = 0,
+    TRAJ_TYPE_ASA = 1,
+    TRAJ_TYPE_NSA = 2,
+    TRAJ_TYPE_QSA = 3
+};
+
+typedef struct
+{
+    SetForeColor(cGray);
+
+    TrajType m_trajType;
+    PadToAlignment(8);
+    uquad m_pGetTrajAtTime <format=hex>;
+    Format m_trajectoryInstanceMemReqs;
+    float m_sampleFrequency;
+    int m_numAnimFrames;
+    QuantisationScaleAndOffsetVec3 m_sampledDeltaQuatKeysInfo;
+    QuantisationScaleAndOffsetVec3 m_sampledDeltaQuatKeysInfo;
+    quad m_pSampledDeltaPosKeys <format=hex>;
+    quad m_pSampledDeltaQuatKeys <format=hex>;    
+
+    if ( m_pSampledDeltaPosKeys )
+        SampledPosKey m_translationSampleData[m_numAnimFrames];
+
+    if ( m_pSampledDeltaQuatKeys )
+        SampledQuatKeyTQA m_rotationSampleData[m_numAnimFrames];
+} TrajectorySourceNSA;
+
+SetForeColor(cGray);
+
+local quad pBak = FTell();
+
+uquad m_pFunctionTable;
+Format m_animInstanceMemoryRequirements;
+AnimType m_animType;
+bool m_isLocated;
+Skip(6);
+uquad m_pVar0 <format=hex>;
+float m_duration;
+float m_sampleFrequency;
+int m_numChannelSets;
+int m_numFrameSections;
+int m_numChannelSections;
+int m_maxNumCompChannels;
+quad m_pUnchangingPosCompToAnimMap <format=hex>;
+
+if ( m_pUnchangingPosCompToAnimMap != 0 ) 
+{
+    pBak = FTell();
+    
+    FSeek(m_pUnchangingPosCompToAnimMap);
+    CompToAnimChannelMap m_unchangingPosCompToAnimMap;
+    FSeek(pBak);
+}
+
+quad m_pUnchangingQuatCompToAnimMap <format=hex>;
+
+if ( m_pUnchangingQuatCompToAnimMap != 0 ) 
+{
+    pBak = FTell();
+    
+    FSeek(m_pUnchangingQuatCompToAnimMap);
+    CompToAnimChannelMap m_unchangingQuatCompToAnimMap;
+    FSeek(pBak);    
+}
+
+quad m_ppSampledPosCompToAnimMaps <format=hex>;
+
+if ( m_ppSampledPosCompToAnimMaps != 0 ) 
+{
+    pBak = FTell();
+
+    FSeek(m_ppSampledPosCompToAnimMaps);
+    uquad m_pSampledPosCompToAnimMaps <format=hex>;
+    FSeek(m_pSampledPosCompToAnimMaps);
+    CompToAnimChannelMap m_sampledPosCompToAnimMaps;
+    
+    FSeek(pBak);    
+}
+
+quad m_ppSampledQuatCompToAnimMaps <format=hex>;
+
+if ( m_ppSampledQuatCompToAnimMaps != 0 ) 
+{
+    pBak = FTell();
+    
+    FSeek(m_ppSampledQuatCompToAnimMaps);
+    uquad m_pSampledQuatCompToAnimMaps <format=hex>;
+    FSeek(m_pSampledQuatCompToAnimMaps);
+    CompToAnimChannelMap m_sampledQuatCompToAnimMaps;
+    
+    FSeek(pBak);        
+}
+
+QuantisationScaleAndOffsetVec3 m_posMeansQuantisationInfo;
+int m_sampledPosNumQuantisationSets;
+int m_sampledQuatNumQuantisationSets;
+quad m_pSampledPosQuantisationInfo <format=hex>;
+
+if ( m_pSampledPosQuantisationInfo != 0 ) 
+{
+    pBak = FTell();
+    
+    FSeek(m_pSampledPosQuantisationInfo);
+    QuantisationScaleAndOffsetVec3 m_translationAnimQuantisationScaleAndOffsetVec3[m_sampledPosNumQuantisationSets];
+    
+    FSeek(pBak);
+}
+
+quad m_pSampledQuatQuantisationInfo <format=hex>;
+
+if ( m_pSampledQuatQuantisationInfo != 0 )
+{
+    pBak = FTell();
+    
+    FSeek(m_pSampledQuatQuantisationInfo);
+    QuantisationScaleAndOffsetVec3 m_rotationQuantisationScaleAndOffsetVec3[m_sampledQuatNumQuantisationSets];
+    
+    FSeek(pBak);
+}
+
+quad m_pUnchangingData <format=hex>;
+
+if ( m_pUnchangingData != 0 ) ù
+{    
+    pBak = FTell();
+ 
+    FSeek(m_pUnchangingData);
+    UnchangingDataNSA m_unchangingData;
+    
+    FSeek(pBak);
+}
+
+int m_maxSectionSize;
+PadToAlignment(8);
+
+quad m_pSectionStartFrames <format=hex>;
+
+if ( m_pSectionStartFrames != 0 ) 
+{
+    pBak = FTell();
+    
+    SetForeColor(cLtBlue);
+    FSeek(m_pSectionStartFrames);
+
+    int m_sectionStartFrames[m_numFrameSections];
+    
+    FSeek(pBak);
+}
+
+quad m_pSectionSizes <format=hex>;
+
+if ( m_pSectionSizes != 0 )
+{
+    pBak = FTell();
+    
+    FSeek(m_pSectionSizes);
+    
+    int m_sectionSizes[m_numFrameSections];
+    
+    FSeek(pBak);
+}
+
+quad m_ppSectionData <format=hex>;
+
+if ( m_ppSectionData != 0 ) 
+{
+    pBak = FTell();
+    
+    FSeek(m_ppSectionData);
+    uquad m_pSectionData[m_numFrameSections] <format=hex>;
+    
+    local int i = 0;
+    for (i = 0; i < m_numFrameSections; i++)
+    {
+        if ( m_pSectionData[i] != 0 ) 
+        {
+            FSeek(m_pSectionData[i]);
+            AnimSectionNSA m_animSectionNSA;
+        }
+    }
+    
+    FSeek(pBak);
+}
+
+quad m_pTrajectoryData <format=hex>;
+
+if ( m_pTrajectoryData != 0 ) 
+{
+    pBak = FTell();
+    
+    FSeek(m_pTrajectoryData);
+    TrajectorySourceNSA m_trajectoryData;
+    
+    FSeek(pBak);
+}

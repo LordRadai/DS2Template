@@ -1,0 +1,383 @@
+//------------------------------------------------
+//--- 010 Editor v7.0.2 Binary Template
+//
+//      File: TAE3.bt
+//   Authors: Radai
+//   Version: 1.0
+//   Purpose: DS2 animation events
+//  Category: Dark Souls
+// File Mask: *.tae
+//  ID Bytes: 54 41 45 20 00 00 00 FF 0C 00 01 00
+//   History: 
+//------------------------------------------------
+
+LittleEndian();
+
+void PadToAlignment(int iAlignment)
+{
+    local quad pPos = FTell();
+    local quad remainder = pPos % iAlignment;
+	
+	if (remainder != 0)
+		FSeek(pPos + (iAlignment - remainder));
+}
+
+float FrameToTime(int frame, int fps)
+{
+    return (float)frame / (float)fps;
+}
+
+typedef struct
+{
+    SetForeColor(cDkYellow);
+    
+    int type;
+    FSkip(4);
+    quad argsOffset <format=hex>;
+    
+    FSeek(argsOffset);
+    local int bakColor = GetBackColor();
+
+    SetBackColor(cDkGreen);
+    SetForeColor(cBlack);
+    
+    byte data[4];
+    
+    SetBackColor(bakColor);
+} EventData <read=ReadEventData>;
+
+string ReadEventData(EventData& data)
+{
+    local string str = "";
+    
+    SPrintf(str, "%d", data.type);
+    
+    return str;
+}
+
+typedef struct
+{
+    SetForeColor(cLtYellow);
+    
+    quad startTimeOffset <format=hex>;
+    quad endTimeOffset <format=hex>;
+    quad eventDataOffset <format=hex>;
+    
+    local int bak = FTell();
+    
+    FSeek(startTimeOffset);
+    float startTime;
+    
+    FSeek(endTimeOffset);
+    float endTime;
+    
+    FSeek(eventDataOffset);
+    EventData eventData; 
+    
+    FSeek(bak);
+} TimeActEvent <read=ReadTimeActEvent>;
+
+string ReadTimeActEvent(TimeActEvent& data)
+{
+    local string str = "";
+    
+    SPrintf(str, "(%.3f, %.3f, %d)", data.startTime, data.endTime, data.eventData.type);
+    
+    return str;
+}
+
+typedef struct
+{
+    SetForeColor(cDkAqua);
+    
+    int groupTypeId;
+    FSkip(4);
+    quad offsetOffset <format=hex>;
+    quad unkOffset10  <format=hex>;
+    quad unkOffset18  <format=hex>;
+} EventGroupData <read=ReadEventGroupData>;
+
+string ReadEventGroupData(EventGroupData& data)
+{
+    local string str = "";
+    
+    SPrintf(str, "%d", data.groupTypeId);
+    
+    return str;
+}
+
+typedef struct
+{
+    SetForeColor(cYellow);
+    
+    quad eventOffset <format=hex>;
+    
+    local int bak = FTell();
+    
+    if (eventOffset != 0)
+    {
+        FSeek(eventOffset);
+        TimeActEvent timeActEvent;  
+        FSeek(bak);
+    }
+} TimeActEventPtr <read=ReadTimeActEventPtr>;
+
+string ReadTimeActEventPtr(TimeActEventPtr& data)
+{   
+    return ReadTimeActEvent(data.timeActEvent);
+}
+
+typedef struct
+{
+    SetForeColor(cAqua);
+    
+    int numEvents;
+    FSkip(4);
+    quad eventsPtrOffset <format=hex>;
+    quad groupDataOffset <format=hex>;
+    int64 isReadable;
+    
+    local int bak = FTell();
+    
+    FSeek(groupDataOffset);
+    EventGroupData eventGroupData;
+    
+    FSeek(eventsPtrOffset);
+    TimeActEventPtr eventPtr[numEvents] <optimize=false>;
+    
+    FSeek(bak);
+} EventGroup <read=ReadEventGroup>;
+
+string ReadEventGroup(EventGroup& data)
+{
+    local string str = "";
+    
+    SPrintf(str, "(%d, %d)", data.numEvents, data.eventGroupData.groupTypeId);
+    
+    return str;
+}
+
+typedef struct
+{
+    SetForeColor(cGreen);
+    
+    int reference;
+    FSkip(4);
+    quad sectionStart <format=hex>;
+    quad sectionEnd <format=hex>;
+    byte bVar18;
+    byte fps;
+    byte bVar1A;
+    byte bVar1B;
+    int lenght;
+    int64 iVar20;
+    int64 iVar28;
+} AnimData <read=ReadAnimData>;
+
+string ReadAnimData(AnimData& data)
+{
+    local string str = "";
+    
+    SPrintf(str, "(lenght=%.3f)", FrameToTime(data.lenght, data.fps));
+    
+    return str;
+}
+
+typedef struct
+{
+    SetForeColor(cDkAqua);
+    
+    quad eventsOffset <format=hex>;
+    quad eventGroupsOffset <format=hex>;
+    quad timesOffset <format=hex>;
+    quad animDataOffset <format=hex>;
+    int eventCount;
+    int eventGroupCount;
+    int timeCount;
+    FSkip(4);
+    
+    local int bak = FTell();
+    
+    FSeek(animDataOffset);
+    AnimData animData;
+      
+    FSeek(timesOffset);
+    float times[timeCount];
+    
+    FSeek(eventsOffset);
+    TimeActEvent event[eventCount] <optimize=false>;
+    
+    FSeek(eventGroupsOffset);
+    EventGroup eventGroup[eventGroupCount] <optimize=false>;
+    
+    FSeek(bak);
+} TimeActData <read=ReadTimeActData>;
+
+string ReadTimeActData(TimeActData& data)
+{
+    local string str = "";
+    
+    SPrintf(str, "(groupCount=%d, lenght=%.3f)", data.eventGroupCount, FrameToTime(data.animData.lenght, data.animData.fps));
+    
+    return str;
+}
+
+typedef struct
+{
+    SetForeColor(cLtGreen);
+    
+    int id;
+    FSkip(4);
+    quad timeActDataOffset <format=hex>;
+    
+    local int bak = FTell();
+    
+    FSeek(timeActDataOffset);
+    TimeActData timeActData;
+    
+    FSeek(bak);
+} TimeActTrack <read=ReadTimeActTrack>;
+
+string ReadTimeActTrack(TimeActTrack& data)
+{
+    local string str = "";
+    
+    SPrintf(str, "(id=%d)", data.id);
+    
+    return str;
+}
+
+typedef struct
+{
+    int startId;
+    int endId;
+    quad timeActTracksOffset <format=hex>;
+    
+    local int bak = FTell();
+    
+    FSeek(timeActTracksOffset);
+    TimeActTrack track;
+    
+    FSeek(bak);
+} TimeActTrackGroup <read=ReadTimeActGroup>;
+
+string ReadTimeActGroup(TimeActTrackGroup& data)
+{
+    local string str = "";
+    
+    SPrintf(str, "(startId=%d, endId=%d)", data.startId, data.endId);
+    
+    return str;
+}
+
+typedef struct
+{
+    SetForeColor(cPurple);
+    
+    int groupCount;
+    FSkip(4);
+    quad taeGroupsOffset <format=hex>;
+    
+    FSeek(taeGroupsOffset);
+    TimeActTrackGroup groups[groupCount] <optimize=false>;
+} TimeActLookupTable <read=ReadLookupTable>;
+
+string ReadLookupTable(TimeActLookupTable& data)
+{
+    local string str = "";
+    
+    SPrintf(str, "(groupCount=%d)", data.groupCount);
+    
+    return str;
+}
+
+typedef struct
+{
+    SetForeColor(cLtBlue);
+    
+    int fileId;
+    int numTimeActTracks;
+    quad tracksOffset <format=hex>;
+    quad lookupTableOffset <format=hex>;
+    quad unkOffset68 <format=hex>;
+    int numTimeActDatas;
+    FSkip(4);
+    quad timeActDatasOffset <format=hex>;
+    
+    FSeek(tracksOffset);
+    TimeActTrack timeActTrack[numTimeActTracks] <optimize=false>;
+    
+    FSeek(lookupTableOffset);
+    TimeActLookupTable lookupTable;
+    
+    FSeek(timeActDatasOffset);
+    TimeActData timeActData[numTimeActDatas] <optimize=false>;
+} FileData <read=ReadFileData>;
+
+string ReadFileData(FileData& data)
+{
+    local string str = "";
+    
+    SPrintf(str, "(fileId=%d, numTracks=%d)", data.fileId, data.numTimeActTracks);
+    
+    return str;
+}
+
+typedef struct(quad tracksOffset)
+{
+    SetForeColor(cLtRed);
+    
+    int iVar80;
+    FSkip(4);
+    quad skeletonFileIdOffset <format=hex>;
+    int skeletonFileId;
+    int sibFileId;
+    quad fileDataOffset <format=hex>;
+    int iVarA0;
+    FSkip(4);
+    quad namesOffset <format=hex>;
+    quad skeletonNameOffset <format=hex>;
+    quad sibNameOffset <format=hex>;
+    
+    local int bak = FTell();
+    
+    if (tracksOffset != skeletonNameOffset)
+    {
+        FSeek(skeletonNameOffset);
+        wstring skeletonName;
+    }
+    
+    if (tracksOffset != sibNameOffset)
+    {
+        FSeek(sibNameOffset);
+        wstring sibName;
+    }
+    
+    FSeek(bak);
+} AnimFileInfo;
+
+SetForeColor(cGray);
+
+char magic[4]; Assert(magic == "TAE ");
+byte bigEndian;
+byte bVar5;
+byte bVar6;
+byte is64Bit;
+int version <format=hex>;
+int fileSize;
+quad fileFlagsOffset <format=hex>;
+int64 isReadable;
+quad fileDataOffset <format=hex>;
+quad animFileInfoOffset <format=hex>;
+int64 iVar30;
+int64 iVar38;
+
+SetForeColor(cBlack);
+FSeek(fileFlagsOffset);
+ubyte flags[16];
+
+FSeek(fileDataOffset);
+FileData fileData;
+
+FSeek(animFileInfoOffset);
+AnimFileInfo animFileInfo(fileData.tracksOffset);

@@ -1,0 +1,898 @@
+//------------------------------------------------
+//--- 010 Editor v12.0 Binary Template
+//
+//      File: NMB.bt
+//   Authors: Radai
+//   Version: 
+//   Purpose: 
+//  Category: Dark Souls II 32-bit Morpheme Binary
+// File Mask: *.nmb
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+#include "AttribType.bt"
+#include "NodeType.bt"
+
+LittleEndian();
+
+typedef struct
+{
+    string m_str;
+} StringList <read=m_str>;
+
+typedef struct
+{
+    local quad pStart = FTell();
+
+    int m_boneCount;
+    int m_stringTableSize;
+    int m_stringTableAlignment;
+    ulong m_pBoneList <format=hex>;
+    ulong m_pStringTable <format=hex>;
+    int m_boneIdx[m_boneCount];
+    ulong m_nameLocalOffsets[m_boneCount] <format=hex>;
+    StringList m_boneNames[m_boneCount] <optimize=false>;    
+    
+    PadToAlignment(16);
+} BoneList;
+
+typedef struct
+{   
+    int m_dataSize;
+    int m_dataAlignment;
+    int m_elemCount;
+    ubyte m_full;
+    PadToAlignment(4);
+    int m_elemType;
+    ulong m_pUnk1 <format=hex>;
+    ulong m_pOrientation <format=hex>;
+    ulong m_pUnk2 <format=hex>;
+    int m_elemCount2;
+    int m_bitsetWordCount;     
+    int m_deformationFlags[m_bitsetWordCount] <format=binary>;
+    int m_iVar10;
+    int m_iVar14;
+    int m_iVar18;
+    int m_iVar1C;
+    int m_iVar20;
+    int m_iVar24;
+    ulong m_pPosition <format=hex>;
+    ulong m_pRotation <format=hex>;
+
+    PadToAlignment(16);
+
+} OrientationHeader;
+
+typedef struct
+{
+    ulong m_pHeader <format=hex>;
+    PadToAlignment(16);
+    
+    local quad pStart = FTell();
+
+    OrientationHeader m_header;
+            
+    FSeek(pStart + m_header.m_pPosition);
+    Vector4 m_position[m_header.m_elemCount];
+
+    FSeek(pStart + m_header.m_pRotation);    
+    Quaternion m_orientation[m_header.m_elemCount];
+} OrientationData;
+
+typedef struct
+{    
+    int m_version;
+    int m_iVar8;
+    int m_iVarC;
+    float m_fVar10;
+    int m_iVar14;
+    int m_iVar18;
+    int m_iVar1C;
+    int m_iVar20;
+    int m_iVar24;
+    int m_iVar28;
+    int m_iVar2C;
+    int m_iVar30;
+    int m_iVar34;
+  
+    PadToAlignment(16);
+
+    int m_parentsArraySize;
+    int m_iVar4C;
+    int m_parentsArray[m_parentsArraySize];
+    BoneList m_boneList;
+    Skip(4);
+    int m_flags <format=binary>;
+
+    OrientationData m_orientation;
+} Rig;
+
+typedef struct
+{
+    float m_start;
+    float m_duration;
+    int m_userValue;
+} Event <read=ReadEvent>;
+
+string ReadEvent( Event &event )
+{
+    string c_res;
+
+    SPrintf(c_res, "(%.3f, %.3f, %d)\n", event.m_start, event.m_duration, event.m_userValue);
+    return c_res;
+}
+
+typedef struct
+{
+    local quad pStart = FTell();
+    
+    int m_numEvents;
+    int m_iVar4;
+    ulong m_pName <format=hex>;
+    int m_eventTrackID;
+    int m_channelID;
+    ulong m_pEvents <format=hex>;
+    
+    FSeek(pStart + m_pEvents);
+    Event m_events[m_numEvents];
+    
+    FSeek(pStart + m_pName);
+    string m_trackName;
+} EventTrack <read=m_trackName>;
+
+typedef struct
+{
+    int m_iVar0;
+    int m_pBoneCount <format=hex>;
+    int m_iVar10;
+    int m_iVar18;
+    ulong m_pMaxIndex <format=hex>;
+    int m_boneCount;
+    int m_bitsetCount;
+    int m_flags[m_bitsetCount] <format=binary>;
+    int m_maxIndex;
+    short m_sVar3C;
+    short m_sVar3E;
+    int m_iVar40;
+    short m_boneIdx[m_boneCount];  
+} RigToAnimMap <read=ReadRigToAnimMap>;
+
+string ReadRigToAnimMap ( RigToAnimMap &rigToAnimMap )
+{
+    string c_res;
+
+    SPrintf(c_res, "%d\n", rigToAnimMap.m_boneCount);
+    return c_res;
+}
+
+typedef struct
+{
+    float m_height;
+    float m_width;
+    float m_depth;
+    float m_radius;
+    float m_skinWidth;
+    float m_stepHeight;
+    float m_maxPushForce;
+    float m_maxSlopeAngle;
+    uint m_flags <format=binary>; 
+    int m_isVisible;
+} CharacterControllerDef;
+
+typedef struct
+{
+    SetForeColor(cDkRed); 
+
+    local quad c_pStart = FTell();
+
+    int m_nodeType;
+    byte m_iVar4;
+    PadToAlignment(2);
+    short m_size;
+    
+    local quad c_pBak = FTell();
+    ulong m_pData <format=hex>;
+
+    if ( m_size > 0 )
+    {
+        FSeek(c_pStart + m_pData);
+        byte m_node[m_size];
+        FSeek(c_pBak + 0x8);
+    }
+    
+} NodeTypeDef <read=ReadNodeTypeDef>;
+
+string ReadNodeTypeDef ( NodeTypeDef &def )
+{
+    local string c_res;
+
+    SPrintf(c_res, "%d\n", def.m_nodeType);
+
+    return c_res;
+}
+
+typedef struct ( quad c_pSectionStart )
+{
+    SetForeColor(cRed); 
+
+    local quad c_pStart = FTell();
+    ulong m_pNodeTypeDef <format=hex>;
+    FSeek(c_pSectionStart + m_pNodeTypeDef);
+
+    NodeTypeDef m_nodeTypeDef;    
+    
+    local string c_res = ReadNodeTypeDef(m_nodeTypeDef);
+
+    FSeek(c_pStart + 0x4); 
+} NodeTypeDefPtr <read=c_res>;
+
+typedef struct ( quad c_pStart )
+{
+    SetForeColor(0x336699); 
+
+    local quad c_pLocalStart = FTell();
+    local quad c_dataPtr = ReadInt(c_pLocalStart);
+    local quad c_dataSize = ReadInt(c_pLocalStart + 0x4);
+    local quad c_dataAlignment = ReadInt(c_pLocalStart + 0x8);
+
+    local quad c_pLocalDataStart = FTell();
+    ulong m_pData <format=hex>;
+
+    if ( c_pStart != 0 && c_dataSize > 0 && c_dataPtr > 0)
+    {
+        FSeek(c_pStart + m_pData);
+        local quad cDataStart = FTell();
+
+        struct AttribData
+        {
+            int m_unk;
+            short m_sUnk;
+            AttribType m_attribType;
+            PadToAlignment(8);
+
+            CreateAttribTypeData(m_attribType, cDataStart, c_dataSize, c_dataAlignment);
+        } m_attrib;
+
+        FSeek(c_pLocalStart + 0x4);
+    }
+
+    int m_dataSize;
+    int m_dataAlignment;
+} NodeAttribSet <read=ReadNodeAttribSet>;
+
+string ReadNodeAttribSet ( NodeAttribSet &dataSet )
+{
+    if  ( dataSet.m_dataSize > 0 && dataSet.m_pData > 0)
+    {
+        local string str = EnumToString(dataSet.m_attrib.m_attribType);
+        
+        if (str == "")
+            SPrintf(str, "AttribType_%d", dataSet.m_attrib.m_attribType);
+        
+        return str;
+    }
+
+    return "NONE";
+}
+
+typedef struct
+{
+    SetForeColor(0x0066ff); 
+
+    local quad c_pStart = FTell();
+
+    NodeType m_nodeType;
+    ushort m_flags <format=binary>;
+    short m_nodeID;
+    short m_parentID;
+    short m_numChildNodeIDs;
+    byte m_bVar1;
+    byte m_bVar2;
+    byte m_numControlParamAndOpNodeIDs;
+    byte m_bVar4;
+    short m_nodeAttribCount;
+    short m_wVar12;
+    PadToAlignment(4);
+
+    int m_pNetworkNodeOffset <format=hex>;
+    
+    local quad c_pBak = FTell();
+
+    c_pBak = FTell();
+    ulong m_pChildNodes <format=hex>;
+            
+    if ( m_numChildNodeIDs > 0 )
+    {
+        FSeek(c_pStart + m_pChildNodes);   
+        short m_childNodeIDs[m_numChildNodeIDs]; 
+        FSeek(c_pBak + 0x4);
+    }
+    
+    c_pBak = FTell();
+    ulong m_pControlParamAndOpNode <format=hex>;
+    
+    if ( m_numControlParamAndOpNodeIDs > 0 )
+    {
+        FSeek(c_pStart + m_pControlParamAndOpNode);     
+        int m_controlParamAndOpNodeIDs[m_numControlParamAndOpNodeIDs]; 
+        FSeek(c_pBak + 0x4);
+    }
+    
+    c_pBak = FTell();
+    ulong m_pNodeAttributes <format=hex>;
+
+    if (m_nodeAttribCount > 0)
+    {
+        FSeek(c_pStart + m_pNodeAttributes);     
+        NodeAttribSet m_nodeAttributes(c_pStart)[m_nodeAttribCount] <optimize=false>; 
+        FSeek(c_pBak + 0x4);
+    }
+
+    short m_sVar40;
+    short m_sVar44;   
+    ulong m_pVar48 <format=hex>;
+    ulong m_pDeleteFn <format=hex>;
+    ulong m_pUpdateFn <format=hex>;
+    ulong m_pUnkFn <format=hex>;
+    ulong m_pInitFn <format=hex>;
+    ulong m_pTransitFn <format=hex>;
+    ulong m_pNodeTypeDef <format=hex>;
+    int m_iVar50;
+    bool m_bVar51;
+    PadToAlignment(4);
+    int m_iVar52;
+} NodeDef <read=ReadNodeDef>;
+
+string ReadNodeDef( NodeDef &node )
+{
+    return EnumToString(node.m_nodeType);
+}
+
+typedef struct ( quad c_pSectionStart )
+{   
+    SetForeColor(0x0033ff); 
+
+    local quad c_pStart = FTell();
+    ulong m_pNode <format=hex>;
+    FSeek(c_pSectionStart + m_pNode);
+
+    NodeDef m_node;    
+    
+    local string c_res = ReadNodeDef(m_node);
+
+    FSeek(c_pStart + 0x4);   
+} NodePtr <read=c_res>;
+
+typedef struct
+{
+    SetForeColor(cLtGreen); 
+
+    local quad c_pStart = FTell();
+
+    int m_nodeCount;
+    
+    local quad c_pPos = FTell();
+    ulong m_pNodeList <format=hex>;
+    if ( m_nodeCount > 0 )
+    {
+
+        FSeek(c_pStart + m_pNodeList);
+    
+        short m_node[m_nodeCount];
+    
+        FSeek(c_pStart + 0x4); 
+    }  
+
+} NodeGroup <read=ReadNodeGroup>;
+
+string ReadNodeGroup( NodeGroup &group )
+{
+    local string c_res;
+
+    SPrintf(c_res, "%d\n", group.m_nodeCount);
+
+    return c_res;
+}
+
+typedef struct
+{
+    SetForeColor(cDkGreen); 
+
+    local quad c_pStart = FTell();
+
+    int m_numEntries;
+    int m_dataLenght;
+    
+    local quad c_pBak = FTell();
+    ulong m_pIDs <format=hex>;
+
+    FSeek(c_pStart + m_pIDs);
+    int m_IDs[m_numEntries];
+    FSeek(c_pBak + 0x4);
+    
+    c_pBak = FTell();
+    ulong m_pOffsets <format=hex>;
+
+    FSeek(c_pStart + m_pOffsets);
+    ulong m_offsets[m_numEntries];
+    FSeek(c_pBak + 0x4);
+   
+    c_pBak = FTell();
+    ulong m_pData <format=hex>;
+
+    FSeek(c_pStart + m_pData);
+    StringList m_data[m_numEntries] <optimize=false>;
+    FSeek(c_pBak + 0x4);
+
+} StringTable <read=ReadStringTable>;
+
+string ReadStringTable( StringTable &table )
+{
+    local string c_res;
+
+    SPrintf(c_res, "%d\n", table.m_numEntries);
+
+    return c_res;
+}
+
+typedef struct
+{
+    int m_dataSize;
+    int m_messageId;
+    int m_messageTypeId;
+    byte m_bVar8;
+    PadToAlignment(4);
+    ubyte m_data[m_dataSize];
+    int m_unk;
+} MessagePreset;
+
+typedef struct(int m_count)
+{
+    int m_stringTotalSize;
+    int m_iVar1 <format=hex>;
+    int m_iVar2 <format=hex>;
+    int m_iVar3 <format=hex>;
+    int m_indices[m_count];
+    ulong m_offsets[m_count] <format=hex>;
+    StringList m_names[m_count] <optimize=false>;
+} MessagePresetMetadata;
+
+typedef struct( quad c_pBase )
+{
+    ulong m_pPtr <format=hex>;
+    local quad c_pBak = FTell();
+
+    FSeek(c_pBase + m_pPtr);
+    int m_value;
+    FSeek(c_pBak);
+} IntPtr<read=ReadIntPtr>;
+
+string ReadIntPtr( IntPtr &ptr )
+{
+    local string c_res;
+
+    SPrintf(c_res, "%d\n", ptr.m_value);
+
+    return c_res;
+}
+
+typedef struct
+{
+    int m_messagePresetCount;
+    ulong m_iVar0 <format=hex>;
+    ulong m_iVar1 <format=hex>;
+    ulong m_iVar2 <format=hex>;
+} MessageInfo;
+
+typedef struct(int iCount, quad pBase)
+{    
+    if ( iCount > 0 )
+    {
+        IntPtr m_pMessageTypes(pBase)[iCount] <format=hex, optimize=false>;
+        int m_iVar2;
+
+        MessagePreset m_messagePreset[iCount] <optimize=false>;
+        MessagePresetMetadata m_messagePresetMetadata(iCount);
+    }
+} MessagePresetList;
+
+typedef struct
+{
+    SetForeColor(cDkAqua); 
+
+    local quad c_pStart = FTell();
+
+    int m_messageId;
+    int m_messageTypeId;
+    int m_validNodeCount;
+
+    local quad c_pBase = FTell();
+    MessageInfo m_messageInfo;
+
+    if ( m_validNodeCount > 0 )
+    {
+        local quad c_pBak = FTell();
+        //FSeek(c_pStart + m_pNodeList);
+        short m_validNode[m_validNodeCount];
+        
+        PadToAlignment(4);
+    }
+      
+    //if ( m_messageInfo.m_messagePresetCount > 0 )
+        //MessagePresetList m_messagePresetList(m_messageInfo.m_messagePresetCount, c_pBase);
+
+} MessageDef <read=ReadMessageDef>;
+
+string ReadMessageDef ( MessageDef &def )
+{
+    local string c_res;
+
+    SPrintf(c_res, "(id=%d, typeId=%d)\n", def.m_messageId, def.m_messageTypeId);
+
+    return c_res;
+}
+
+typedef struct ( quad c_pSectionStart )
+{
+    SetForeColor(cAqua); 
+
+    local quad c_pStart = FTell();
+    ulong m_pMessageDef <format=hex>;
+
+    local string c_res = "NA";
+
+    if ( m_pMessageDef )
+    {
+        FSeek(c_pSectionStart + m_pMessageDef);
+    
+        MessageDef m_messageDef;    
+        
+        FSeek(c_pStart + 0x4); 
+
+        c_res = ReadMessageDef(m_messageDef);
+    }
+} MessageDefPtr <read=c_res>;
+
+typedef struct(int size)
+{
+    int m_function[size];
+} FunctionDef;
+
+typedef struct
+{
+    SetForeColor(cDkYellow);
+
+    local quad c_pStart = FTell();
+    int m_count;
+    int m_size;
+    ulong m_pAlignment <format=hex>;
+    int m_alignment;
+    
+    local quad c_pBak = FTell();
+    FunctionDef m_functionDef(m_size + 1)[m_count] <optimize=false>;
+    
+    PadToAlignment(m_alignment);
+} FunctionDefList;
+
+typedef struct(int iSize)
+{
+    int m_values[iSize];
+} UnkArray;
+
+typedef struct
+{
+    SetForeColor(cDkAqua); 
+
+    local quad c_pStart = FTell();
+
+    int m_numArrays;
+    int m_arraySize;
+    int m_ppArray <format=hex>;
+    short m_sVar1;
+    short m_dataSize;
+    
+    FSeek(c_pStart + m_ppArray);
+    
+    short m_unkArray[m_dataSize];
+} UnkArrayList;
+
+typedef struct(int iSize)
+{
+    int m_data[iSize];
+} UnkNodeDataIndices;
+
+typedef struct(quad cStart, int iSize, int iAnimSetCount)
+{
+    ulong m_pData[iAnimSetCount] <format=hex>;
+    
+    local int i = 0;
+    for (i = 0; i < iAnimSetCount; i++)
+    {
+        FSeek(cStart + m_pData[i]);
+        UnkNodeDataIndices m_data(iSize);
+    }
+} UnkNodeData;
+
+typedef struct
+{   
+    SetForeColor(cLtYellow); 
+
+    local quad c_pStart = FTell();
+    NodeDef m_networkInstance;
+    int m_numNodes;
+
+    local quad c_pBak = FTell();
+    ulong m_ppNodes <format=hex>;
+
+    FSeek(c_pStart + m_ppNodes);
+    NodePtr m_nodes(c_pStart)[m_numNodes] <optimize=false>; 
+    FSeek(c_pBak + 0x4);
+
+    short m_animSetCount;
+    PadToAlignment(4);
+    
+    c_pBak = FTell();
+    ulong m_pUnkBool <format=hex>;
+
+    FSeek(c_pStart + m_pUnkBool);
+    int m_unk[2];
+    
+    PadToAlignment(4);
+    FSeek(c_pBak + 0x4);
+
+    c_pBak = FTell();
+    ulong m_pStateMachineNodeGroup <format=hex>;
+
+    FSeek(c_pStart + m_pStateMachineNodeGroup);
+    NodeGroup m_stateMachineNodeGroup;
+    FSeek(c_pBak + 0x4);
+
+    c_pBak = FTell();
+    ulong m_pNodeGroup1 <format=hex>;
+
+    FSeek(c_pStart + m_pNodeGroup1);
+    NodeGroup m_nodeGroup1;
+    FSeek(c_pBak + 0x4);
+
+    c_pBak = FTell();
+    ulong m_pNodeGroup2 <format=hex>;
+
+    FSeek(c_pStart + m_pNodeGroup2);
+    NodeGroup m_nodeGroup2;
+    FSeek(c_pBak + 0x4);
+
+    c_pBak = FTell();
+    ulong m_pNodeIDNamesTable <format=hex>;
+
+    FSeek(c_pStart + m_pNodeIDNamesTable);
+    StringTable m_nodeIDNamesTable;
+    FSeek(c_pBak + 0x4);
+
+    c_pBak = FTell();
+    ulong m_pRequestIDNamesTable <format=hex>;
+
+    FSeek(c_pStart + m_pRequestIDNamesTable);
+    StringTable m_requestIDNamesTable;
+    FSeek(c_pBak + 0x4);
+
+    c_pBak = FTell();
+    ulong m_pEventTrackIDNamesTable <format=hex>;
+
+    FSeek(c_pStart + m_pEventTrackIDNamesTable);
+    StringTable m_eventTrackIDNamesTable;
+    FSeek(c_pBak + 0x4);
+
+    c_pBak = FTell();
+    ulong m_pVar68 <format=hex>;
+
+    FSeek(c_pStart + m_pVar68);
+    UnkArrayList m_unkArrayList;
+    FSeek(c_pBak + 0x4);
+
+    c_pBak = FTell();
+    ulong m_pFuncDef <format=hex>;
+
+    FSeek(c_pStart + m_pFuncDef);
+    FunctionDefList m_functionDefList;
+    FSeek(c_pBak + 0x4);
+
+    c_pBak = FTell();
+    ulong m_pFuncDef2 <format=hex>;
+
+    FSeek(c_pStart + m_pFuncDef2);
+    FunctionDefList m_functionDefList2;
+    FSeek(c_pBak + 0x4);
+
+    int m_messageDefCount;
+
+    c_pBak = FTell();
+    ulong m_ppMessageDefs <format=hex>;
+
+    FSeek(c_pStart + m_ppMessageDefs);
+    MessageDefPtr m_messageDef(c_pStart) [m_messageDefCount] <optimize=false>;
+    FSeek(c_pBak + 0x4);
+
+    int m_nodeTypeCount;
+
+    c_pBak = FTell();
+    ulong m_pNodeTypeDefs <format=hex>;
+
+    FSeek(c_pStart + m_pNodeTypeDefs);
+    NodeTypeDefPtr m_nodeTypeDefList(c_pStart) [m_nodeTypeCount] <optimize=false>;
+    FSeek(c_pBak + 0x4);
+
+    int m_unkNodeArraySize;
+    int m_iVarA4;
+    PadToAlignment(4);
+    bool m_bVarAC;
+    bool m_bVarAD;
+    PadToAlignment(4);
+    int m_iVarB0;
+    int m_iVarB4;
+    ulong m_pUnkNodeData1 <format=hex>;
+    ulong m_pUnkNodeData2 <format=hex>;
+    
+    FSeek(c_pStart + m_pUnkNodeData1);
+    UnkNodeData m_unkNodeData1(c_pStart, m_unkNodeArraySize, m_animSetCount);
+    
+    FSeek(c_pStart + m_pUnkNodeData2);
+    UnkNodeData m_unkNodeData2(c_pStart, m_unkNodeArraySize, m_animSetCount);
+} NetworkDef;
+
+typedef struct
+{
+    int m_iVar0;
+    ulong m_pRuntimeTargetName <format=hex>;
+    int m_runtimeTargetNameSize;
+    int m_iVar3;
+    int m_iVar4;
+    int m_iVar5;
+    string m_runtimeTarget;
+} FileHeader;
+
+typedef struct
+{
+    int m_elemCount;
+    int m_stringSize;
+    int m_idxOffset <format=hex>;
+    int m_localOffsetsOffset <format=hex>;
+    int m_stringsOffset <format=hex>;
+    int m_idx[m_elemCount];
+    int m_localOffsets[m_elemCount] <format=hex>;
+    StringList m_strings[m_elemCount] <optimize=false>;
+
+    PadToAlignment(4);
+} ExpandedStringTable <read=m_elemCount>;
+
+typedef struct
+{
+    int m_animTableOffset <format=hex>;
+    int m_formatTableOffset <format=hex>;
+    int m_sourceTableOffset <format=hex>;
+    int m_tagTableOffset <format=hex>;
+    ExpandedStringTable m_animList;
+    ExpandedStringTable m_animFormat;
+    ExpandedStringTable m_sourceXmdList;
+    ExpandedStringTable m_tagList;
+
+    BigEndian();
+    int m_stringHash[m_tagList.m_elemCount] <format=hex>;
+    LittleEndian();
+} FileNameLookupTable;
+
+enum eBundleType
+{
+    kAsset_Rig = 1,
+    kAsset_RigToAnimMap = 2,
+    kAsset_EventTrackDiscrete = 3,
+    kAsset_EventTrackDuration = 4,
+    kAsset_CharacterControllerDef = 7,
+    kAsset_NetworkDef = 10,
+    kAsset_FileHeader = 12,
+    kAsset_SimpleAnimRuntimeIDtoFilenameLookup = 13
+};
+
+void SetColorByDataType( eBundleType c_iType )
+{
+    switch ( c_iType )
+    {
+    default:
+        Printf("Unknown type=%d\n", c_iType);
+        break;
+    case kAsset_Rig:
+        SetForeColor(cLtRed);
+        break;
+    case kAsset_RigToAnimMap:
+        SetForeColor(cPurple);
+        break;
+    case kAsset_EventTrackDiscrete:
+        SetForeColor(cLtBlue);
+        break;
+    case kAsset_EventTrackDuration:
+        SetForeColor(cLtBlue);
+        break;
+    case kAsset_CharacterControllerDef:
+        SetForeColor(cLtGreen);
+        break;
+    case kAsset_NetworkDef:
+        SetForeColor(cLtYellow); 
+        break;
+    case kAsset_FileHeader:
+        SetForeColor(cGray);
+        break;
+    case kAsset_SimpleAnimRuntimeIDtoFilenameLookup:
+        SetForeColor(cLtPurple);
+        break;
+    }    
+}
+
+typedef struct
+{
+    SetColorByDataType(ReadInt(FTell() + 0x8));
+
+    int m_magic[2]; Assert( m_magic[0] == 24 ); Assert( m_magic[1] == 6 );
+    eBundleType m_bundleType;
+    uint m_id <format=hex>;
+    GUID m_guid;
+    int m_dataSize;
+	int m_dataAlignment;
+
+    local quad c_pDataStart = FTell();    
+
+    int m_iVar2C;
+
+    local quad c_pPos = FTell();
+        
+    PadToAlignment(m_dataAlignment);
+
+    local uint c_foreColor = GetForeColor();
+    local uint c_backColor = GetBackColor();
+
+    switch ( m_bundleType )
+    {
+    default:
+        SetForeColor(cNone);
+        SetBackColor(cBlack);
+        ubyte m_data[m_dataSize];  
+        break;
+    case kAsset_Rig:
+        Rig m_rig;
+        break;
+    case kAsset_RigToAnimMap:
+        RigToAnimMap m_rigToAnimMap;
+        break; 
+    case kAsset_EventTrackDiscrete:
+        EventTrack m_eventTrack;
+        break;
+    case kAsset_EventTrackDuration:
+        EventTrack m_eventTrack;
+        break;
+    case kAsset_CharacterControllerDef:
+        CharacterControllerDef m_characterControllerDef;
+        break;
+    case kAsset_NetworkDef:
+        NetworkDef m_networkDef;
+        break;
+    case kAsset_FileHeader:
+        FileHeader m_header;
+        break;
+    case kAsset_SimpleAnimRuntimeIDtoFilenameLookup:
+        FileNameLookupTable m_fileNameLookupTable;
+        break;
+    }  
+
+    SetForeColor(c_foreColor);
+    SetBackColor(c_backColor);
+    
+    FSeek(c_pDataStart + m_dataSize);
+
+    PadToAlignment(m_dataAlignment);
+} Bundle <read=EnumToString(m_bundleType)>;
+
+local eBundleType c_BundleType = 0;
+
+while ( c_BundleType < kAsset_SimpleAnimRuntimeIDtoFilenameLookup )
+{
+    Bundle bundle;
+    c_BundleType = bundle.m_bundleType;
+};

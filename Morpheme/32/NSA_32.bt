@@ -1,0 +1,411 @@
+//------------------------------------------------
+//--- 010 Editor v9.0.2 Binary Template
+//
+//      File: 
+//   Authors: Radai
+//   Version: 
+//   Purpose: 
+//  Category: 
+// File Mask: *.nsa
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+LittleEndian();
+
+typedef struct (int count)
+{
+    SetForeColor(cBlack);
+
+    ubyte m_pad[count];
+} Padding;
+
+typedef struct
+{
+    float m_i;
+    float m_j;
+    float m_k;
+    float m_w;
+} Quaternion <read=ReadQuaternion>;
+
+string ReadQuaternion ( Quaternion &quat )
+{
+    string c_res;
+
+    SPrintf(c_res, "(%.3f, %.3f, %.3f, %.3f)\n", quat.m_i, quat.m_j, quat.m_k, quat.m_w);
+    return c_res;
+}
+
+typedef struct
+{
+    SetForeColor(cAqua);
+    float m_min[3];
+    float m_scaledExtent[3];
+} DequantizationFactors <read=ReadDequantizationFactor>;
+
+string ReadDequantizationFactor(DequantizationFactors &deqFactor)
+{
+    string ret;
+
+    SPrintf(ret, "(%.3f, %.3f, %.3f), (%.3f, %.3f, %.3f)\n", deqFactor.m_min[0], deqFactor.m_min[1], deqFactor.m_min[2], deqFactor.m_scaledExtent[0], deqFactor.m_scaledExtent[1], deqFactor.m_scaledExtent[2]);
+
+    return ret;
+}
+
+typedef struct
+{
+    short m_x;
+    short m_y;
+    short m_z;
+} Vec3Short <read=ReadVec3Short>;
+
+string ReadVec3Short( Vec3Short &vec )
+{
+    string ret;
+
+    SPrintf(ret, "(%d, %d, %d)\n", vec.m_x, vec.m_y, vec.m_z);
+
+    return ret;
+}
+
+typedef struct  
+{
+    SetForeColor(cGray);
+
+    int m_hash <format=hex>;
+    int m_pNsaDynamicSegment <format=hex>;
+    int m_alignment;
+    int unk18;
+    int unk1C;
+    int unk20;
+    float m_duration;
+    float m_fps;
+    int m_boneCount;
+    int m_pSampleCountCount;
+    int m_dynamicSegmentCount;
+    int m_animBoneCount;
+    int m_pStaticTranslationBoneIndices <format=hex>;
+    int m_pStaticRotationBoneIndices <format=hex>;
+    int m_ppDynamicTranslationBoneIndices <format=hex>;
+    int m_ppDynamicRotationBoneIndices <format=hex>;
+    DequantizationFactors m_translationStartPosFactors;
+    int m_translationAnimDequantizationCount;
+    int m_rotationAnimDequantizationCount;
+    int m_pTranslationDequantizationFactors <format=hex>;
+    int m_pRotationDequantizationFactors <format=hex>;
+    int m_pNsaStaticSegment <format=hex>;
+    int m_secondSegmentSize <format=hex>;
+    int m_pSampleCount <format=hex>;
+    int m_pDynamicSegmentSize <format=hex>;
+    int m_ppNsaDynamicSegment <format=hex>;
+    int m_pNsaRootMotionSegment <format=hex>;
+    Padding m_pad(8);
+} Header;
+
+typedef struct
+{
+    short count <fgcolor=cGreen>;
+    short id[count] <fgcolor=cLtGreen>;
+} IndexList <read=ReadIndexList>;
+
+string ReadIndexList( IndexList &p )
+{
+    string ret;
+
+    SPrintf(ret, "%d\n", p.count);
+
+    return ret;
+}
+
+typedef struct
+{
+    local quad startPos = FTell();
+
+    SetForeColor(cLtRed);
+    int m_translationBoneCount;
+    int m_rotationBoneCount;
+    DequantizationFactors m_translationBoneDequantizationFactors;
+    DequantizationFactors m_rotationBoneDequantizationFactors;
+    int m_pTranslationData <format=hex>;
+    int m_pRotationData <format=hex>;
+    
+    if  ( m_translationBoneCount > 0 && m_pTranslationData != 0 )
+    {   
+        
+        FSeek(startPos + m_pTranslationData);
+        Vec3Short m_translationData[m_translationBoneCount];
+    }
+
+    if  ( m_rotationBoneCount > 0 && m_pRotationData != 0 )
+        FSeek(startPos + m_pRotationData);
+        Vec3Short m_rotationData[m_rotationBoneCount];
+
+    local int padAmount = CalculatePadAlignmentCount(16);
+    if ( padAmount != 0 )
+        Padding m_pad(padAmount);
+
+} NsaStaticSegment;
+
+typedef struct
+{
+    int m_x : 11;
+    int m_y : 11;
+    int m_z : 10;
+} TranslationSampleData <read=ReadTranslationSampleData>;
+
+string ReadTranslationSampleData( TranslationSampleData &sampleData )
+{
+    string ret;
+
+    SPrintf(ret, "(%d, %d, %d)\n", sampleData.m_x, sampleData.m_y, sampleData.m_z);
+
+    return ret;
+}
+
+typedef struct 
+{
+    SetForeColor(cRed);
+
+    int m_offset <format=hex>;
+} Offset <read=ReadOffset>;
+
+string ReadOffset( Offset &p )
+{
+    string ret;
+
+    SPrintf(ret, "%Xh\n", p.m_offset);
+
+    return ret;
+}
+
+typedef struct
+{
+    SetForeColor(cPurple);
+
+    Vec3Short m_data;
+} RotationSampleData <read=ReadVec3Short(m_data)>;
+
+int GetDeqInfoCount(int bone_count) 
+{
+    local int multiple = bone_count / 4;
+
+    if(bone_count % 4 != 0) 
+        multiple = multiple + 1;
+
+    return multiple * 4;
+};
+
+typedef struct
+{
+    SetForeColor(cLtRed);
+
+    byte m_init[3];
+    byte m_factor_idx[3];
+} DequantizationInfo <read=ReadDequantizationInfo>;
+
+string ReadDequantizationInfo(DequantizationInfo &deqInfo)
+{
+    string ret;
+
+    SPrintf(ret, "(%d, %d, %d), (%d, %d, %d)\n", deqInfo.m_init[0], deqInfo.m_init[1], deqInfo.m_init[2], deqInfo.m_factor_idx[0], deqInfo.m_factor_idx[1], deqInfo.m_factor_idx[2]);
+
+    return ret;
+}
+
+int CalculatePadAlignmentCount(int alignment)
+{
+    local quad pos = FTell();
+    local int remainder = pos % alignment;
+
+    if (remainder != 0)
+        return alignment - remainder;
+
+    return 0;
+}
+
+typedef struct
+{
+    local quad startPos = FTell();
+    SetForeColor(cLtGreen);
+
+    int m_sampleCount;
+    int m_translationBoneCount;
+    int m_rotationBoneCount;
+    int m_pTranslationSampleData <format=hex>;
+    int m_pTranslationDeqInfo <format=hex>;
+    int m_pRotationSampleData <format=hex>;
+    int m_pRotationDeqInfo <format=hex>;
+    
+    if ( m_pTranslationSampleData != 0 )
+    {
+        FSeek(startPos + m_pTranslationSampleData);
+        TranslationSampleData m_translationData[m_sampleCount * m_translationBoneCount];    
+    }
+
+    if ( m_pTranslationDeqInfo != 0 )
+    {
+        FSeek(startPos + m_pTranslationDeqInfo);
+        DequantizationInfo m_translationDeqInfo[GetDeqInfoCount(m_translationBoneCount)];
+    }
+
+    if ( m_pRotationSampleData != 0 )
+    {
+        FSeek(startPos + m_pRotationSampleData);
+        RotationSampleData m_rotationData[m_sampleCount * m_rotationBoneCount];
+
+        local quad RotationDataEnd = FTell();
+        
+        if ( ((startPos + m_pRotationDeqInfo) - RotationDataEnd) != 0) //I don't know what this is, but it's not always present
+            short m_unkData[m_sampleCount];
+    }
+
+    if ( m_pRotationDeqInfo != 0 )
+    {
+        FSeek(startPos + m_pRotationDeqInfo);
+        DequantizationInfo m_rotationDeqInfo[GetDeqInfoCount(m_rotationBoneCount)];
+    }
+
+    local int padAmount = CalculatePadAlignmentCount(16);
+    if ( padAmount != 0 )
+        Padding m_pad(padAmount);
+
+} NsaDynamicSegment;
+
+typedef struct
+{
+    SetForeColor(cGray);
+
+    int m_version;
+    int m_iVar1;
+    int m_size <format=hex>;
+    int m_alignment;
+    float m_framerate;
+    int m_sampleCount;
+    DequantizationFactors m_translationFactors;
+    Quaternion m_rotation;
+    Padding m_pad(8);
+    int m_pRootMotionTranslationData <format=hex>;
+    int m_pRootMotionRotationData <format=hex>;    
+
+    if ( m_pRootMotionTranslationData )
+        TranslationSampleData m_translationSampleData[m_sampleCount];
+
+    if ( m_pRootMotionRotationData )
+        RotationSampleData m_rotationSampleData[m_sampleCount];
+
+    local int padAmount = CalculatePadAlignmentCount(16);
+    if ( padAmount != 0 )
+        Padding m_pad1(padAmount);
+
+} NsaRootMotionSegment;
+
+Header m_header;
+
+if ( m_header.m_pStaticTranslationBoneIndices != 0 ) 
+{
+    FSeek(m_header.m_pStaticTranslationBoneIndices);
+    IndexList m_staticTranslationBoneIndices;
+}
+
+if ( m_header.m_pStaticRotationBoneIndices != 0 ) 
+{
+    FSeek(m_header.m_pStaticRotationBoneIndices);
+    IndexList m_staticRotationBoneIndices;
+
+}
+
+if ( m_header.m_ppDynamicTranslationBoneIndices != 0 ) 
+{
+    FSeek(m_header.m_ppDynamicTranslationBoneIndices);
+    Offset m_pDynamicTranslationBoneIndices;
+    FSeek(m_pDynamicTranslationBoneIndices.m_offset);
+    IndexList m_dynamicTranslationBoneIndices;
+}
+
+if ( m_header.m_ppDynamicRotationBoneIndices != 0 ) 
+{
+    FSeek(m_header.m_ppDynamicRotationBoneIndices);
+    Offset m_pDynamicRotationBoneIndices;
+    FSeek(m_pDynamicRotationBoneIndices.m_offset);
+    IndexList m_dynamicRotationBoneIndices;
+}
+
+if ( m_header.m_pTranslationDequantizationFactors != 0 ) 
+{
+    FSeek(m_header.m_pTranslationDequantizationFactors);
+    DequantizationFactors m_translationAnimDequantizationFactors[m_header.m_translationAnimDequantizationCount];
+}
+
+if ( m_header.m_pRotationDequantizationFactors != 0 )
+{
+    FSeek(m_header.m_pRotationDequantizationFactors);
+    DequantizationFactors m_rotationDequantizationFactors[m_header.m_rotationAnimDequantizationCount];
+}
+
+typedef struct
+{
+    int m_iVar0;
+    int m_sampleCountMinusOne;
+} NsaA0 <read=ReadNsaA0>;
+
+string ReadNsaA0( NsaA0 &p )
+{
+    string ret;
+
+    SPrintf(ret, "%d\n", p.m_sampleCountMinusOne);
+
+    return ret;
+}
+
+if ( m_header.m_pSampleCount != 0 ) 
+{
+    SetForeColor(cLtBlue);
+    FSeek(m_header.m_pSampleCount);
+
+    NsaA0 m_nsaA0;
+}
+
+typedef struct
+{
+    int m_dynamicSegmentSize <format=hex>;
+} DynamicSegmentSize <read=ReadDynamicSegmentSize>;
+
+string ReadDynamicSegmentSize( DynamicSegmentSize &p )
+{
+    string ret;
+
+    SPrintf(ret, "%Xh\n", p.m_dynamicSegmentSize);
+
+    return ret;
+}
+
+if ( m_header.m_pDynamicSegmentSize != 0 )
+{
+    FSeek(m_header.m_pDynamicSegmentSize);
+
+    DynamicSegmentSize m_dynamicSegmentSize;
+}
+
+if ( m_header.m_ppNsaDynamicSegment != 0 ) 
+{
+    FSeek(m_header.m_ppNsaDynamicSegment);
+    Offset m_pNsaDynamicSegment;
+    FSeek(m_pNsaDynamicSegment.m_offset);
+}
+
+if ( m_header.m_pNsaStaticSegment != 0 ) {
+    
+    FSeek(m_header.m_pNsaStaticSegment);
+    NsaStaticSegment m_nsaStaticSegment;
+}
+
+if ( m_header.m_pNsaDynamicSegment != 0 ) 
+{
+    FSeek(m_header.m_pNsaDynamicSegment);
+    NsaDynamicSegment m_nsaDynamicSegment;
+}
+
+if ( m_header.m_pNsaRootMotionSegment != 0 ) 
+{
+    FSeek(m_header.m_pNsaRootMotionSegment);
+    NsaRootMotionSegment m_nsaRootMotionSegment;
+}

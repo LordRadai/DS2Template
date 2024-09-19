@@ -1,0 +1,227 @@
+enum<short> TransitConditionDef
+{
+    TransitConditionDefOnRequest = 601,
+    TransitConditionDefDiscreteEventTriggered = 602,
+    TransitConditionDefCrossedDurationFraction = 603,
+    TransitConditionDefControlParamFloatGreater = 606,
+    TransitConditionDefFalse = 607,
+    TransitConditionDefControlParamFloatLess = 608,
+    TransitConditionDefCrossedDurationEventFraction = 610,
+    TransitConditionDefInSyncEventRange = 611,
+    TransitConditionDefPhysicsAvailable = 612,
+    TransitConditionDefPhysicsInUse = 613,
+    TransitConditionDefGroundContact = 614,
+    TransitConditionDefRayHit = 615,
+    TransitConditionDefInSubState = 617,
+    TransitConditionDefInDurationEvent = 618,
+    TransitConditionDefPhysicsMoving = 619,
+    TransitConditionDefSKDeviation = 620,
+    TransitConditionDefControlParamIntGreater = 623,    
+    TransitConditionDefControlParamIntLess = 624,
+    TransitConditionDefControlParameterIntInRange = 625,
+    TransitConditionDefControlParamFloatInRange = 627,
+};
+
+typedef struct
+{
+    int m_messageId;
+} TransitConditionOnRequest;
+
+typedef struct
+{
+    short m_nodeId;
+    short m_sVar2;
+    short m_nodeUnk;
+    short m_sVar4;
+    int m_nodeFlags <format=binary>;
+    int m_eventUserTypeId;
+} TransitConditionDiscreteEventTriggered;
+
+typedef struct
+{
+    int m_controlParamId;
+    float m_lowerTestValue;
+    float m_upperTestValue;
+} TransitConditionControlParamFloatInRange;
+
+typedef struct
+{
+    int m_controlParamId;
+    float m_testValue;
+    bool m_orEqual;
+} TransitConditionControlParamFloatTest;
+
+typedef struct
+{
+    int m_controlParamId;
+    int m_testValue;
+    bool m_orEqual;
+} TransitConditionControlParamIntTest;
+
+typedef struct
+{
+    short m_nodeID;
+    short m_sVar1;
+    short m_sVar2;
+    short m_sVar3;
+    int m_flags <format=binary>;
+    float m_testFraction;
+} TransitConditionCrossedDurationFraction;
+
+typedef struct
+{
+    short m_nodeId;
+    short m_sVar2;
+    short m_nodeUnk;
+    short m_sVar4;
+    int m_nodeFlags <format=binary>;
+    int m_eventTrackUserTypeId;
+    int m_eventUserTypeId;
+    float m_testValue;
+} TransitConditionCrossedDurationEventFraction;
+
+typedef struct
+{
+    short m_nodeId;
+    short m_sVar2;
+    short m_nodeUnk;
+    short m_sVar4;
+    int m_nodeFlags <format=binary>;
+    int m_eventTrackUserTypeId;
+    int m_eventUserTypeId;
+} TransitConditionInDurationEvent;
+
+typedef struct
+{
+    short m_event1NodeId;
+    short m_sVar2;
+    short m_event1Unk;
+    short m_sVar4;
+    int m_node1Flags <format=binary>;
+    short m_event2NodeId;
+    short m_sVar7;
+    short m_event2Unk;
+    short m_sVar9;   
+    int m_node2Flags <format=binary>;
+    float m_event1Position;
+    float m_event2Position;
+} TransitConditionInSyncEventRange;
+
+typedef struct
+{
+    bool m_onPhysicsAvaiable;
+} TransitConditionPhysicsAvailable;
+
+typedef struct
+{
+    bool m_onPhysicsInUse;
+} TransitConditionPhysicsInUse;
+
+typedef struct
+{
+    float m_velocityThreshold;
+    float m_angularVelocityThreshold;
+    int m_minFramesBelow;
+    bool m_onNotSet;
+} TransitConditionPhysicsMoving;
+
+typedef struct
+{
+    float m_triggerTime;
+    bool m_onGround;
+} TransitConditionGroundContact;
+
+typedef struct
+{
+    int m_hitMode;
+    bool m_useLocalOrientation;
+    PadToAlignment(4);
+    
+    Vector3 m_rayStart;
+    Vector3 m_rayDelta;
+} TransitConditionRayHit;
+
+typedef struct
+{
+    float m_deviationTime;
+    float m_deviationTriggerAmount;
+    bool m_triggerWhenDeviationIsExceeded;
+} TransitConditionSKDeviation;
+
+typedef struct
+{
+    short m_nodeId;
+} TransitConditionInSubState;
+
+typedef struct
+{
+    int m_controlParamId;
+    int m_lowerTestValue;
+    int m_upperTestValue;
+} TransitConditionControlParamIntInRange;
+
+void CreateTransitConditionData(TransitConditionDef iTypeID)
+{
+	switch(iTypeID)
+    {
+    case TransitConditionDefOnRequest:
+        TransitConditionOnRequest m_data;
+        break;
+    case TransitConditionDefDiscreteEventTriggered:
+        TransitConditionDiscreteEventTriggered m_data;
+        break;
+    case TransitConditionDefCrossedDurationFraction:
+        TransitConditionCrossedDurationFraction m_data;
+        break;
+    case TransitConditionDefControlParamFloatGreater:
+        TransitConditionControlParamFloatTest m_data;
+        break;
+    case TransitConditionDefControlParamFloatLess:
+        TransitConditionControlParamFloatTest m_data;
+        break;
+    case TransitConditionDefInSyncEventRange:
+        TransitConditionInSyncEventRange m_data;
+        break;
+    case TransitConditionDefCrossedDurationEventFraction:
+        TransitConditionCrossedDurationEventFraction m_data;
+        break;
+    case TransitConditionDefGroundContact:
+        TransitConditionGroundContact m_data;
+        break;
+    case TransitConditionDefPhysicsAvailable:
+        TransitConditionPhysicsAvailable m_data;
+        break;
+    case TransitConditionDefPhysicsInUse:
+        TransitConditionPhysicsInUse m_data;
+        break;
+    case TransitConditionDefRayHit:
+        TransitConditionRayHit m_data;
+        break;
+    case TransitConditionDefSKDeviation:
+        TransitConditionSKDeviation m_data;
+        break;
+    case TransitConditionDefPhysicsMoving:
+        TransitConditionPhysicsMoving m_data;
+        break;
+    case TransitConditionDefInSubState:
+        TransitConditionInSubState m_data;
+        break;
+    case TransitConditionDefInDurationEvent:
+        TransitConditionInDurationEvent m_data;
+        break;
+    case TransitConditionDefControlParamIntGreater:
+        TransitConditionControlParamIntTest m_data;
+        break;
+    case TransitConditionDefControlParamIntLess:
+        TransitConditionControlParamIntTest m_data;
+        break;
+    case TransitConditionDefControlParameterIntInRange:
+        TransitConditionControlParamIntInRange m_data;
+        break;
+    case TransitConditionDefControlParamFloatInRange:
+        TransitConditionControlParamFloatInRange m_data;
+        break;
+    default:
+        break;
+    }
+}
