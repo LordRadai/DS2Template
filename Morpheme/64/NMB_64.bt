@@ -62,9 +62,9 @@ typedef struct
         FSeek(c_pStart + m_pData);
         StringList m_data[m_numEntries] <optimize=false>;
     }
-} StringTable <read=ReadStringTable>;
+} IDMappedStringTable <read=ReadIDMappedStringTable>;
 
-string ReadStringTable( StringTable &table )
+string ReadIDMappedStringTable( IDMappedStringTable &table )
 {
     local string c_res;
 
@@ -112,7 +112,7 @@ typedef struct
     Hierarchy m_hierarchy;
     
     FSeek(pStart + m_pBoneIDNamesTable);    
-    StringTable m_boneNameMap;
+    IDMappedStringTable m_boneNameMap;
     
     FSeek(pStart + m_pBindPose);        
     AttribData m_bindPose;
@@ -120,7 +120,7 @@ typedef struct
 
 string ReadRig( Rig &data )
 {
-    return ReadStringTable(data.m_boneNameMap);
+    return ReadIDMappedStringTable(data.m_boneNameMap);
 }
 
 typedef struct
@@ -683,21 +683,21 @@ typedef struct
     uquad m_pNodeIDNamesTable <format=hex>;
 
     FSeek(c_pStart + m_pNodeIDNamesTable);
-    StringTable m_nodeIDNamesTable;
+    IDMappedStringTable m_nodeIDNamesTable;
     FSeek(c_pBak + 0x8);
 
     c_pBak = FTell();
     uquad m_pRequestIDNamesTable <format=hex>;
 
     FSeek(c_pStart + m_pRequestIDNamesTable);
-    StringTable m_requestIDNamesTable;
+    IDMappedStringTable m_requestIDNamesTable;
     FSeek(c_pBak + 0x8);
 
     c_pBak = FTell();
     uquad m_pEventTrackIDNamesTable <format=hex>;
 
     FSeek(c_pStart + m_pEventTrackIDNamesTable);
-    StringTable m_eventTrackIDNamesTable;
+    IDMappedStringTable m_eventTrackIDNamesTable;
     FSeek(c_pBak + 0x8);
 
     c_pBak = FTell();
@@ -785,16 +785,16 @@ typedef struct
     uquad m_pHashes <format=hex>;
     
     FSeek(pStart + m_pAnimTable);
-    StringTable m_sourceNSAs;
+    IDMappedStringTable m_sourceNSAs;
     
     FSeek(pStart + m_pFormatTable);    
-    StringTable m_formats;
+    IDMappedStringTable m_formats;
 
     FSeek(pStart + m_pSourceXMDTable);
-    StringTable m_sourceXMDs;
+    IDMappedStringTable m_sourceXMDs;
 
     FSeek(pStart + m_pTakeTable);
-    StringTable m_takes;
+    IDMappedStringTable m_takes;
 
     BigEndian();
     
@@ -908,7 +908,7 @@ typedef struct
         NetworkDef m_networkDef;
         break;
     case kAsset_PluginList:
-        StringTable m_pluginList;
+        IDMappedStringTable m_pluginList;
         break;
     case kAsset_SimpleAnimRuntimeIDtoFilenameLookup:
         FileNameLookupTable m_fileNameLookupTable;
