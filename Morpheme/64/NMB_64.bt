@@ -802,9 +802,9 @@ typedef struct
     int m_stringHash[m_takes.m_numEntries] <format=hex>;
     
     LittleEndian();
-} FileNameLookupTable;
+} SimpleAnimRuntimeIDtoFilenameLookup;
 
-enum eBundleType
+enum AssetType
 {
     kAsset_Rig = 1,
     kAsset_RigToAnimMap = 2,
@@ -822,7 +822,7 @@ enum eBundleType
     kAsset_Invalid = -1,
 };
 
-void SetColorByDataType( eBundleType c_iType )
+void SetColorByDataType( AssetType c_iType )
 {
     switch ( c_iType )
     {
@@ -871,7 +871,7 @@ typedef struct
 
     int m_binaryVersion;
     int m_platformFmt; Assert(m_platformFmt | kPlatform_LittleEndian | kPlatform_64Bit);
-    eBundleType m_bundleType;
+    AssetType m_bundleType;
     uint m_id <format=hex>;
     GUID m_guid;
     Format m_assetMemoryReqs;
@@ -911,7 +911,7 @@ typedef struct
         IDMappedStringTable m_pluginList;
         break;
     case kAsset_SimpleAnimRuntimeIDtoFilenameLookup:
-        FileNameLookupTable m_fileNameLookupTable;
+        SimpleAnimRuntimeIDtoFilenameLookup m_SimpleAnimRuntimeIDtoFilenameLookup;
         break;
     }  
 
@@ -924,7 +924,7 @@ typedef struct
         
 } Bundle <read=EnumToString(m_bundleType)>;
 
-local eBundleType c_BundleType = 0;
+local AssetType c_BundleType = 0;
 
 while ( c_BundleType < kAsset_SimpleAnimRuntimeIDtoFilenameLookup )
 {
