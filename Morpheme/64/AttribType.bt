@@ -393,7 +393,7 @@ typedef struct
 {
     TransitConditionDef m_type;
     byte m_invert;
-    PadToAlignment(8);
+    Skip(5);
     uquad m_locateFn;
     uquad m_dislocateFn;
     uquad m_relocateFn;
