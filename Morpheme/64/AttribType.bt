@@ -541,7 +541,7 @@ typedef struct(int iAlignment, quad cStart)
     FSeek(cStart + m_pJointIndices);
     short m_rigChannels[m_numJoints];
     
-    FSeek(cStart + m_pUnkIndices);
+    FSeek(cStart + m_pAnimChannels);
     short m_animChannels[m_numJoints];
     
     PadToAlignment(iAlignment);    
@@ -1215,7 +1215,7 @@ typedef struct(int iAlignment, quad cStart)
     int m_numBones;
     PadToAlignment(8);    
     uquad m_pQuatOffsets <format=hex>;
-    uquad m_pUnkIndices <format=hex>;
+    uquad m_pBoneIndices <format=hex>;
     
     FSeek(cStart + m_pBoneMappings);
     AdvancedMapping m_boneMappings[m_numBoneMappings];
@@ -1223,8 +1223,8 @@ typedef struct(int iAlignment, quad cStart)
     FSeek(cStart + m_pQuatOffsets);
     Vector4 m_quatOffsets[m_numBones];
     
-    FSeek(cStart + m_pUnkIndices);
-    int m_unkIndices[m_numBones];
+    FSeek(cStart + m_pBoneIndices);
+    int m_boneIndices[m_numBones];
     
     if (m_numEventIds > 0)
     {    
