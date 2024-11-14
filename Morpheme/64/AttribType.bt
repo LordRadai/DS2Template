@@ -751,7 +751,7 @@ typedef struct(int iAlignment, quad cStart)
     float m_lowerHeightBound;
     float m_toeLowerHeightBound;
     int m_jointIndex[5];
-    int m_footbalEventID;
+    int m_footfallEventID;
     float m_footPivotOffsetThreshold;
     float m_catchUpSpeedFactor;
     float m_snapToSourceDistance;
@@ -818,7 +818,7 @@ typedef struct(int iAlignment, quad cStart)
 typedef struct(int iAlignment, quad cStart)
 {
     Vector3 m_vectorRate;
-    float m_floatRateIncreasing;
+    float m_floatRate;
     float m_initialValueX;
     float m_initialValueY;
     float m_initialValueZ;
@@ -1212,19 +1212,19 @@ typedef struct(int iAlignment, quad cStart)
     int m_numEventIds;
     PadToAlignment(8);    
     uquad m_pEventIds <format=hex>;
-    int m_numBones;
+    int m_numUnmappedBones;
     PadToAlignment(8);    
     uquad m_pQuatOffsets <format=hex>;
-    uquad m_pBoneIndices <format=hex>;
+    uquad m_pUnmappedBones <format=hex>;
     
     FSeek(cStart + m_pBoneMappings);
     AdvancedMapping m_boneMappings[m_numBoneMappings];
     
     FSeek(cStart + m_pQuatOffsets);
-    Vector4 m_quatOffsets[m_numBones];
+    Vector4 m_quatOffsets[m_numUnmappedBones];
     
-    FSeek(cStart + m_pBoneIndices);
-    int m_boneIndices[m_numBones];
+    FSeek(cStart + m_pUnmappedBones);
+    int m_unmappedBones[m_numUnmappedBones];
     
     if (m_numEventIds > 0)
     {    
