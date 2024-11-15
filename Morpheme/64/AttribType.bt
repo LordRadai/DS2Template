@@ -1173,15 +1173,17 @@ typedef struct
     Vector4 rightUp;
     int leftIndex;
     int rightIndex;
-    int leftUnk;
-    int rightUnk;
+    PadToAlignment(16);    
+
+    //int leftUnk;
+    //int rightUnk;
 } AdvancedMapping <read=ReadAdvancedMapping>;
 
 string ReadAdvancedMapping(AdvancedMapping &data)
 {
     string str = "";
     
-    SPrintf(str, "(joint=%d, mirro=%d)", data.leftIndex, data.rightIndex);
+    SPrintf(str, "(left=%d, right=%d)", data.leftIndex, data.rightIndex);
     
     return str;
 }
@@ -1214,17 +1216,17 @@ typedef struct(int iAlignment, quad cStart)
     uquad m_pEventIds <format=hex>;
     int m_numUnmappedBones;
     PadToAlignment(8);    
-    uquad m_pQuatOffsets <format=hex>;
-    uquad m_pUnmappedBones <format=hex>;
+    uquad m_pUnmappedQuatOffsets <format=hex>;
+    uquad m_pUnmappedBoneIDs <format=hex>;
     
     FSeek(cStart + m_pBoneMappings);
-    AdvancedMapping m_boneMappings[m_numBoneMappings];
+    AdvancedMapping m_boneMappings[m_numBoneMappings] <optimize=false>;
     
-    FSeek(cStart + m_pQuatOffsets);
-    Vector4 m_quatOffsets[m_numUnmappedBones];
+    FSeek(cStart + m_pUnmappedQuatOffsets);
+    Vector4 m_unmappedQuatOffsets[m_numUnmappedBones] <optimize=false>;
     
-    FSeek(cStart + m_pUnmappedBones);
-    int m_unmappedBones[m_numUnmappedBones];
+    FSeek(cStart + m_pUnmappedBoneIDs);
+    int m_unmappedBoneIDs[m_numUnmappedBones] <optimize=false>;
     
     if (m_numEventIds > 0)
     {    

@@ -42,23 +42,19 @@ typedef struct
     
     local quad c_pBak = FTell();
     uquad m_pIDs <format=hex>;
+    uquad m_pOffsets <format=hex>;
+    uquad m_pData <format=hex>;
 
     if (m_numEntries > 0)
     {
         FSeek(c_pStart + m_pIDs);
         int m_IDs[m_numEntries];
         FSeek(c_pBak + 0x8);
-        
-        c_pBak = FTell();
-        uquad m_pOffsets <format=hex>;
-    
+            
         FSeek(c_pStart + m_pOffsets);
         ulong m_offsets[m_numEntries] <format=hex>;
         FSeek(c_pBak + 0x8);
-        
-        c_pBak = FTell();
-        uquad m_pData <format=hex>;
-    
+            
         FSeek(c_pStart + m_pData);
         StringList m_data[m_numEntries] <optimize=false>;
     }
