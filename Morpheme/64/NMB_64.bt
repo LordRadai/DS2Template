@@ -362,12 +362,32 @@ string ReadCPConnection(CPConnection &data)
 
 typedef struct
 {
+    bool NODE_FLAG_IS_ANIM_SOURCE : 1;
+    bool NODE_FLAG_IS_TRANSITION_ZERO : 1;
+    bool NODE_FLAG_IS_CONTROL_PARAM : 1;
+    bool NODE_FLAG_IS_TRANSITION : 1;
+    bool NODE_FLAG_IS_STATE_MACHINE : 1;
+    bool NODE_FLAG_IS_PHYSICAL : 1;
+    bool NODE_FLAG_IS_PHYSICAL_GROUPER : 1;
+    bool NODE_FLAG_OUTPUT_REFERENCED : 1;
+    bool NODE_FLAG_IS_FILTER : 1;
+    bool NODE_FLAG_IS_BREAKOUT_TRANSITION : 1;
+    bool NODE_FLAG_IS_TRANSITION_CAN_DEAD_BLEND : 1;
+    bool NODE_FLAG_IS_BEHAVIOURAL : 1;
+    bool NODE_FLAG_IS_OPERATOR_NODE : 1;
+    bool NODE_FLAG_REQUIRES_SEPARATE_TRAJECTORY_AND_TRANSFORMS : 1;
+    bool NODE_FLAG_IS_BLEND_OPT_NODE : 1;
+    bool NODE_FLAG_NO_PHYSICAL_CHILDREN : 1;
+} NodeFlags;
+
+typedef struct
+{
     SetForeColor(0x0066ff); 
 
     local quad c_pStart = FTell();
 
     NodeType m_nodeTypeID;
-    ushort m_nodeFlags <format=binary>;
+    NodeFlags m_nodeFlags <format=binary>;
     short m_nodeID;
     short m_parentNodeID;
     short m_numChildNodeIDs;
