@@ -565,7 +565,7 @@ typedef struct
     Quaternion frame;
     Quaternion offset;
     Vector3 lower;
-    Vector3 uppder;
+    Vector3 upper;
     LimitType limitType;
     PadToAlignment(16);
 } JointLimitsParam <read=ReadJointLimitsParam>;
