@@ -88,7 +88,7 @@ typedef struct
 {
     int m_boneCount;
     PadToAlignment(8);    
-    int64 m_pVar1 <format=hex>;
+    Skip(8);
     int m_parentsArray[m_boneCount];    
 } Hierarchy;
 

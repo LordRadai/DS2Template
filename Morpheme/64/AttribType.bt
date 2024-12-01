@@ -1030,14 +1030,15 @@ typedef struct(int iAlignment, quad cStart)
     short m_numWeightsY;
     bool m_wrapWeightsX;
     bool m_wrapWeightsY;
+    PadToAlignment(8);
     uquad m_pWeightsX <format=hex>;
     uquad m_pWeightsY <format=hex>;
     
     FSeek(cStart + m_pWeightsX);
-    float m_weights[m_numWeightsX];
+    float m_weightsX[m_numWeightsX];
     
     FSeek(cStart + m_pWeightsY);
-    float m_weights[m_numWeightsY];
+    float m_weightsY[m_numWeightsY];
 
     PadToAlignment(iAlignment);
 } AttribBlendNXMDef;

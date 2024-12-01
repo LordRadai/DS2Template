@@ -71,8 +71,9 @@ string ReadVec3Short( Vec3Short &vec )
 
 typedef struct
 {
-    short m_numChannels <fgcolor=cGreen>;
-    short m_animChannels[m_numChannels] <fgcolor=cLtGreen>;
+    SetForeColor(cGreen);
+    short m_numChannels;
+    short m_animChannels[m_numChannels];
 } CompToAnimChannelMap <read=ReadCompToAnimChannelMap>;
 
 string ReadCompToAnimChannelMap( CompToAnimChannelMap &p )
@@ -86,9 +87,10 @@ string ReadCompToAnimChannelMap( CompToAnimChannelMap &p )
 
 typedef struct
 {
+    SetForeColor(cLtRed);
+
     local quad startPos = FTell();
 
-    SetForeColor(cLtRed);
     int m_unchangingPosNumChannels;
     int m_unchangingQuatNumChannels;
     QuantisationScaleAndOffsetVec3 m_unchangingPosQuantisationInfo;
@@ -113,6 +115,8 @@ typedef struct
 
 typedef struct
 {
+    SetForeColor(cPurple);
+
     int m_x : 11;
     int m_y : 11;
     int m_z : 10;
@@ -128,8 +132,8 @@ string ReadSampledPosKey( SampledPosKey &sampleData )
 }
 
 typedef struct
-{
-    SetForeColor(cPurple);
+{    
+    SetForeColor(cLtPurple);
     
     short m_data[3];
 } SampledQuatKeyTQA <read=ReadSampledQuatKeyTQA>;
@@ -155,8 +159,7 @@ int GetDeqInfoCount(int bone_count)
 
 typedef struct
 {
-    SetForeColor(cLtRed);
-
+    SetForeColor(cBlack);
     byte m_init[3];
     byte m_factor_idx[3];
 } QuantisationMeanAndSetVec3 <read=ReadQuantisationMeanAndSetVec3>;
@@ -173,7 +176,7 @@ string ReadQuantisationMeanAndSetVec3(QuantisationMeanAndSetVec3 &deqInfo)
 typedef struct
 {
     local quad pStart = FTell();
-    SetForeColor(cLtGreen);
+    SetForeColor(cBlue);
 
     int m_numSectionAnimFrames;
     int m_sampledPosNumChannels;
@@ -223,7 +226,7 @@ enum<int> TrajType
 
 typedef struct
 {
-    SetForeColor(cGray);
+    SetForeColor(cRed);
 
     TrajType m_trajType;
     PadToAlignment(8);
