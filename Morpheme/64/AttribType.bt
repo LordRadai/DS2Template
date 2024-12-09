@@ -739,8 +739,8 @@ typedef struct(int iAlignment, quad cStart)
     bool m_assumeSimpleHierarchy;
     bool m_trackCharacterController;    
     PadToAlignment(4);
-    float m_fVar4;
-    int m_iVar5;
+    float m_defaultFkIkWeight;
+    float m_defaultSwivelContributionToOrientation;
     
     PadToAlignment(iAlignment);    
 } AttribLockFootSetup;
