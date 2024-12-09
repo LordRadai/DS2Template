@@ -549,7 +549,7 @@ typedef struct(int iAlignment, quad cStart)
 
 typedef struct(int iAlignment, quad cStart)
 { 
-    float m_fVar1;
+    float m_defaultBlendWeight;
     bool m_updateTargetByDeltas;
     bool m_worldSpaceTarget;
     PadToAlignment(iAlignment);        
@@ -640,7 +640,7 @@ typedef struct(int iAlignment, quad cStart)
 typedef struct(int iAlignment, quad cStart)
 {
     Vector3 m_worldUpAxis;
-    float m_fVar1;
+    float m_defaultBlendWeight;
     bool m_keepUpright;
     bool m_worldSpaceTarget;
     bool m_applyJointLimits;
