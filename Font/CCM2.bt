@@ -1,0 +1,88 @@
+//------------------------------------------------
+//--- 010 Editor v9.0.1 Binary Template
+//
+//      File: CCM2.bt
+//   Authors: TKGP, Radai
+//   Version: 
+//   Purpose: DS2/DS3 legacy font layouts
+//  Category: Dark Souls
+// File Mask: *.ccm
+//  ID Bytes: 00 00 02 00
+//   History: 
+//------------------------------------------------
+
+local byte bConsole = 0;
+LittleEndian();
+FSeek(0x1D);
+if (ReadByte() == 1) {
+    bConsole = 1;
+    BigEndian();
+}
+FSeek(0);
+
+typedef struct {
+    SetBackColor(cLtGreen);
+    
+    short x1;
+    short y1;
+    short x2;
+    short y2;
+} TexRegion <read=ReadTexRegion>;
+
+wstring ReadTexRegion(TexRegion& texRegion) {
+    string str;
+    SPrintf(str, "(%3i, %3i) (%3i, %3i)",
+        texRegion.x1, texRegion.y1, texRegion.x2, texRegion.y2);
+    return str;
+}
+
+typedef struct {
+    SetBackColor(cLtRed);
+    
+    int code;
+    int texRegionOffset <format=hex>;    
+    short textureIndex;
+    short preSpace;
+    short width;
+    short advance;
+    int iVar10; Assert(iVar10 == 0);
+    int iVar14; Assert(iVar14 == 0);
+    
+    local quad pos <hidden=true> = FTell();
+    FSeek(texRegionOffset);
+    TexRegion texRegion;
+    FSeek(pos);
+} Glyph <read=ReadGlyph, optimize=false>;
+
+wstring ReadGlyph(Glyph& glyph) {
+    string str;
+    SPrintf(str, "%5i %4Xh %2i %2i %2i %2i",
+        glyph.code, glyph.texRegionOffset, glyph.textureIndex,
+        glyph.preSpace, glyph.width, glyph.advance);
+    return str;
+}
+
+typedef struct {
+    SetBackColor(cBlack);
+    
+    int format <format=hex>; Assert(format == 0x20000);
+    int fileSize <format=hex>;
+    short fontHeight;
+    short textureWidth;
+    short textureHeight;
+    ushort texRegionCount;
+    uint glyphCount;
+    int texRegionOffset <format=hex>;    
+    int glyphOffset <format=hex>; 
+    byte bVar1C;
+    byte isBigEndian;
+    short textureCount;
+        
+    FSeek(texRegionOffset);
+    TexRegion texRegions[texRegionCount];
+    
+    FSeek(glyphOffset);
+    Glyph glyphs[glyphCount];
+} CCM2FileData;
+
+CCM2FileData fileData;

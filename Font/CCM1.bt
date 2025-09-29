@@ -1,0 +1,82 @@
+//------------------------------------------------
+//--- 010 Editor v9.0.1 Binary Template
+//
+//      File: CCM1.bt
+//   Authors: Jed "Nyxojaele" Lang, TKGP, Radai
+//   Version: 
+//   Purpose: DeS/DS1 font layouts
+//  Category: Dark Souls
+// File Mask: *.ccm
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+
+local byte bConsole = 0;
+LittleEndian();
+FSeek(0x1D);
+if (ReadByte() == 1) {
+    bConsole = 1;
+    BigEndian();
+}
+FSeek(0);
+
+typedef struct {
+    SetBackColor(cLtGreen);
+
+    int startCode;
+    int endCode;
+    int glyphIndex;
+} CodeGroup <read=ReadCodeGroup>;
+
+wstring ReadCodeGroup(CodeGroup& group) {
+    string str;
+    SPrintf(str, "%5i - %5i : %4i",
+        group.startCode, group.endCode, group.glyphIndex);
+    return str;
+}
+
+typedef struct {
+    SetBackColor(cLtRed);
+
+    float u1;
+    float v1;
+    float u2;
+    float v2;
+    short preSpace;
+    short width;
+    short advance;
+    short textureIndex;
+} Glyph <read=ReadGlyph>;
+
+wstring ReadGlyph(Glyph& glyph) {
+    string str;
+    SPrintf(str, "%2i %2i %2i %2i",
+        glyph.preSpace, glyph.width, glyph.advance, glyph.textureIndex);
+    return str;
+}
+
+typedef struct {
+    SetBackColor(cBlack);
+    
+    uint format <format=hex>; Assert(format == 0x10000);
+    uint fileSize <format=hex>;
+    short fontHeight;
+    short textureWidth;
+    short textureHeight;
+    short sVarE;
+    short codeGroupCount;
+    short glyphCount;
+    uint codeGroupOffset <format=hex>; Assert(codeGroupOffset == 0x20);
+    uint glyphOffset <format=hex>;
+    byte unk1C;
+    byte isBigEndian;
+    byte textureCount;
+    byte unk1F <hidden=true>; Assert(unk1F == 0);
+    
+    FSeek(codeGroupOffset);
+    CodeGroup codeGroups[codeGroupCount];
+    FSeek(glyphOffset);
+    Glyph glyphs[glyphCount];
+} CCMFileData;
+
+CCMFileData fileData <bgcolor=cLtRed>;
