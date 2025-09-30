@@ -50,8 +50,8 @@ typedef struct {
 
 wstring ReadGlyph(Glyph& glyph) {
     string str;
-    SPrintf(str, "%2i %2i %2i %2i",
-        glyph.preSpace, glyph.width, glyph.advance, glyph.textureIndex);
+    SPrintf(str, "((%.3f, %.3f), (%.3f, %.3f)) - %2i %2i %2i %2i",
+        glyph.u1, glyph.v1, glyph.u2, glyph.v2, glyph.preSpace, glyph.width, glyph.advance, glyph.textureIndex);
     return str;
 }
 
