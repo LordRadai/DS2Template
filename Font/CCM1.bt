@@ -58,7 +58,7 @@ wstring ReadGlyph(Glyph& glyph) {
 typedef struct {
     SetBackColor(cBlack);
     
-    uint format <format=hex>; Assert(format == 0x10000);
+    uint format <format=hex>;
     uint fileSize <format=hex>;
     short fontHeight;
     short textureWidth;
