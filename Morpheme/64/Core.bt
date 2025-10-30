@@ -1,3 +1,6 @@
+local uint ptrSize = 8;
+typedef uquad pointer;
+
 void PadToAlignment(int iAlignment)
 {
     if (iAlignment == 0)

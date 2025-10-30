@@ -4,6 +4,7 @@ enum<short> TransitConditionDef
     TransitConditionDefDiscreteEventTriggered = 602,
     TransitConditionDefCrossedDurationFraction = 603,
     TransitConditionDefControlParamFloatGreater = 606,
+    TransitConditionDefFalse = 607,
     TransitConditionDefControlParamFloatLess = 608,
     TransitConditionDefCrossedDurationEventFraction = 610,
     TransitConditionDefInSyncEventRange = 611,
@@ -24,8 +25,6 @@ enum<short> TransitConditionDef
 typedef struct
 {
     int m_messageId;
-    short m_unk;
-    bool m_onNotSet;
 } TransitConditionOnRequest;
 
 typedef struct
@@ -43,8 +42,6 @@ typedef struct
     int m_controlParamId;
     float m_lowerTestValue;
     float m_upperTestValue;
-    short m_sVar0;
-    bool m_notInRange;
 } TransitConditionControlParamFloatInRange;
 
 typedef struct
@@ -63,7 +60,7 @@ typedef struct
 
 typedef struct
 {
-    short m_sVar0;
+    short m_nodeID;
     short m_sVar1;
     short m_sVar2;
     short m_sVar3;
@@ -92,7 +89,6 @@ typedef struct
     int m_nodeFlags <format=binary>;
     int m_eventTrackUserTypeId;
     int m_eventUserTypeId;
-    bool m_onNotSet;
 } TransitConditionInDurationEvent;
 
 typedef struct
@@ -162,8 +158,6 @@ typedef struct
     int m_controlParamId;
     int m_lowerTestValue;
     int m_upperTestValue;
-    short m_sVar0;
-    bool m_notInRange;
 } TransitConditionControlParamIntInRange;
 
 void CreateTransitConditionData(TransitConditionDef iTypeID)

@@ -20,7 +20,7 @@ typedef struct
 {
     local quad pStart = FTell();
 
-    uquad m_allocator <format=hex>;
+    pointer m_allocator <format=hex>;
     short m_refCount;    
 	AttribType m_attribType;
 	PadToAlignment(8);
@@ -41,19 +41,19 @@ typedef struct
     int m_dataLenght;
     
     local quad c_pBak = FTell();
-    uquad m_pIDs <format=hex>;
-    uquad m_pOffsets <format=hex>;
-    uquad m_pData <format=hex>;
+    pointer m_pIDs <format=hex>;
+    pointer m_pOffsets <format=hex>;
+    pointer m_pData <format=hex>;
 
     if (m_numEntries > 0)
     {
         FSeek(c_pStart + m_pIDs);
         int m_IDs[m_numEntries];
-        FSeek(c_pBak + 0x8);
+        FSeek(c_pBak + ptrSize);
             
         FSeek(c_pStart + m_pOffsets);
         ulong m_offsets[m_numEntries] <format=hex>;
-        FSeek(c_pBak + 0x8);
+        FSeek(c_pBak + ptrSize);
             
         FSeek(c_pStart + m_pData);
         StringList m_data[m_numEntries] <optimize=false>;
@@ -86,10 +86,10 @@ void CreateElementDataEntry(ElementType eType, int iSize)
 
 typedef struct
 {
-    int m_boneCount;
-    PadToAlignment(8);    
-    Skip(8);
-    int m_parentsArray[m_boneCount];    
+    int m_NumEntries;
+    PadToAlignment(8);
+    pointer m_pHierarchyArray <format=hex>;
+    int m_HierarchyArray[m_NumEntries];    
 } Hierarchy;
 
 typedef struct
@@ -98,11 +98,11 @@ typedef struct
      
     Vector4 m_blendFrameOrientation;
     Vector4 m_blendFrameTranslation;
-    uquad m_pHierarchy <format=hex>;
+    pointer m_pHierarchy <format=hex>;
     int m_trajectoryBoneID;
     int m_characterRootBoneID;
-    uquad m_pBoneIDNamesTable <format=hex>;
-    uquad m_pBindPose <format=hex>;
+    pointer m_pBoneIDNamesTable <format=hex>;
+    pointer m_pBindPose <format=hex>;
   
     FSeek(pStart + m_pHierarchy);
     Hierarchy m_hierarchy;
@@ -148,10 +148,10 @@ typedef struct
     
     int m_numEvents;
     EventType m_type;
-    uquad m_pName <format=hex>;
+    pointer m_pName <format=hex>;
     int m_userData;
     int m_trackID;
-    uquad m_pEvents <format=hex>;
+    pointer m_pEvents <format=hex>;
     
     FSeek(pStart + m_pEvents);
     Event m_events[m_numEvents];
@@ -183,7 +183,7 @@ typedef struct
     int m_numAnimChannels;
     short m_numUsedEntries;
     short m_numAnimChannelsForLOD;
-    uquad m_pAnimToRigEntries <format=hex>;
+    pointer m_pAnimToRigEntries <format=hex>;
     
     FSeek(pStart + m_pAnimToRigEntries);
     short m_animToRigEntries[m_numAnimChannels]; 
@@ -193,9 +193,9 @@ typedef struct
 {
     RigToAnimMapType m_rigToAnimMapType;
     Skip(4);
-    uquad m_pUsedFlags <format=hex>;
+    pointer m_pUsedFlags <format=hex>;
     Format m_memReqsRigToAnimMapData;
-    uquad m_pRigToAnimMapData <format=hex>;
+    pointer m_pRigToAnimMapData <format=hex>;
     UsedFlags m_usedFlags;
     RigToAnimMapData m_rigToAnimMapData;  
 } RigToAnimMap <read=ReadRigToAnimMap>;
@@ -273,7 +273,7 @@ typedef struct
     short m_numSemantics;
     
     local quad c_pBak = FTell();
-    uquad m_pSemanticLookup <format=hex>;
+    pointer m_pSemanticLookup <format=hex>;
 
     if ( m_numSemantics > 0 )
     {
@@ -303,7 +303,7 @@ typedef struct ( quad c_pSectionStart )
     SetForeColor(cRed); 
 
     local quad c_pStart = FTell();
-    uquad m_pNodeTypeDef <format=hex>;
+    pointer m_pNodeTypeDef <format=hex>;
     FSeek(c_pSectionStart + m_pNodeTypeDef);
 
     SemanticLookupTable m_semanticLookupTable;    
@@ -323,7 +323,7 @@ typedef struct ( quad c_pStart )
     local quad c_dataAlignment = ReadInt(c_pLocalStart + 0x10);
 
     local quad c_pLocalDataStart = FTell();
-    uquad m_pAttribData <format=hex>;
+    pointer m_pAttribData <format=hex>;
 
     if ( c_pStart != 0 && c_dataSize > 0 && c_dataPtr > 0)
     {
@@ -398,12 +398,12 @@ typedef struct
     short m_passThroughChildIndex;
     Skip(4);
 
-    uquad m_pOwningNetworkDef <format=hex>;
+    pointer m_pOwningNetworkDef <format=hex>;
     
     local quad c_pBak = FTell();
 
     c_pBak = FTell();
-    uquad m_pChildNodeIDs <format=hex>;
+    pointer m_pChildNodeIDs <format=hex>;
             
     if ( m_numChildNodeIDs > 0 )
     {
@@ -413,7 +413,7 @@ typedef struct
     }
     
     c_pBak = FTell();
-    uquad m_pInputCPConnections <format=hex>;
+    pointer m_pInputCPConnections <format=hex>;
     
     if ( m_numInputCPConnections > 0 )
     {
@@ -423,7 +423,7 @@ typedef struct
     }
     
     c_pBak = FTell();
-    uquad m_pNodeAttribDataHandles <format=hex>;
+    pointer m_pNodeAttribDataHandles <format=hex>;
 
     if (m_numAttribDataHandles > 0)
     {
@@ -435,17 +435,17 @@ typedef struct
     short m_taskQueuingFnsID;
     short m_outputCPTasksID;
     Skip(4);   
-    uquad m_taskQueuingFns;
-    uquad m_outputCPTasks;
-    uquad m_deleteNodeInstanceFn;
-    uquad m_updateNodeConnectionsFn;
-    uquad m_findGeneratingNodeForSemanticFn;
-    uquad m_initNodeInstanceFn;
-    uquad m_messageHandlerFn;
-    uquad m_semanticLookupTable;
+    pointer m_taskQueuingFns;
+    pointer m_outputCPTasks;
+    pointer m_deleteNodeInstanceFn;
+    pointer m_updateNodeConnectionsFn;
+    pointer m_findGeneratingNodeForSemanticFn;
+    pointer m_initNodeInstanceFn;
+    pointer m_messageHandlerFn;
+    pointer m_semanticLookupTable;
     ubyte m_numOnEnterMessages;
     Skip(7);
-    uquad m_pOnEnterMessages <format=hex>;
+    pointer m_pOnEnterMessages <format=hex>;
 } NodeDef <read=ReadNodeDef>;
 
 string ReadNodeDef( NodeDef &node )
@@ -463,7 +463,7 @@ typedef struct ( quad c_pSectionStart )
     SetForeColor(0x0033ff); 
 
     local quad c_pStart = FTell();
-    uquad m_pNode <format=hex>;
+    pointer m_pNode <format=hex>;
     
     FSeek(c_pSectionStart + m_pNode);
     NodeDef m_node;    
@@ -478,7 +478,7 @@ typedef struct
     int m_numEmittedControlParamNodes;
     Skip(4);
     
-    uquad m_pEmittedControlParamsData <format=hex>;
+    pointer m_pEmittedControlParamsData <format=hex>;
 } EmittedControlParamsInfo;
 
 typedef struct
@@ -491,7 +491,7 @@ typedef struct
     Skip(4);
     
     local quad c_pPos = FTell();
-    uquad m_pNodeIDs <format=hex>;
+    pointer m_pNodeIDs <format=hex>;
     if ( m_numEntries > 0 )
     {
         FSeek(c_pStart + m_pNodeIDs);
@@ -522,11 +522,11 @@ typedef struct
     int m_messageType;
     int m_numNodeIDs;
     Skip(4);
-    uquad m_pNodeIDs <format=hex>;
+    pointer m_pNodeIDs <format=hex>;
     int m_numMessagePresets;
     Skip(4);
-    uquad m_pMessagePresets <format=hex>;
-    uquad m_pMessagePresetIndexNamesTable <format=hex>;
+    pointer m_pMessagePresets <format=hex>;
+    pointer m_pMessagePresetIndexNamesTable <format=hex>;
     
     if ( m_numNodeIDs > 0 )
     {
@@ -553,7 +553,7 @@ typedef struct ( quad c_pSectionStart )
     SetForeColor(cAqua); 
 
     local quad c_pStart = FTell();
-    uquad m_pMessageDistributor <format=hex>;
+    pointer m_pMessageDistributor <format=hex>;
 
     local string c_res = "NA";
 
@@ -571,7 +571,7 @@ typedef struct ( quad c_pSectionStart )
 
 typedef struct(int size)
 {
-    uquad m_function[size];
+    pointer m_function[size];
 } SharedTaskFn;
 
 typedef struct
@@ -581,10 +581,10 @@ typedef struct
     local quad c_pStart = FTell();
     int m_numTaskFnTables;
     int m_numEntriesPerTable;
-    uquad m_pTaskFnTables <format=hex>;
+    pointer m_pTaskFnTables <format=hex>;
     
     FSeek(c_pStart + m_pTaskFnTables);
-    uquad m_offsets[m_numTaskFnTables] <format=hex>;
+    pointer m_offsets[m_numTaskFnTables] <format=hex>;
     
     SharedTaskFn m_functions(m_numEntriesPerTable)[m_numTaskFnTables] <optimize=false>;
 } SharedTaskFnTables <read=ReadSharedTaskFnTables>;
@@ -604,9 +604,9 @@ typedef struct
 
     local quad c_pStart = FTell();
 
-    uquad m_pTags <format=hex>;
-    uquad m_pTagEntries <format=hex>;
-    uquad m_tagListLengths <format=hex>;
+    pointer m_pTags <format=hex>;
+    pointer m_pTagEntries <format=hex>;
+    pointer m_tagListLengths <format=hex>;
     short m_tagCharCount;
     short m_numNodes;
     
@@ -631,7 +631,7 @@ typedef struct(int iSize)
 
 typedef struct(quad cStart, int iSize, int iAnimSetCount)
 {
-    uquad m_pData[iAnimSetCount] <format=hex>;
+    pointer m_pData[iAnimSetCount] <format=hex>;
     
     local int i = 0;
     for (i = 0; i < iAnimSetCount; i++)
@@ -656,7 +656,7 @@ typedef struct
     int m_numNodes;
     PadToAlignment(8);
     local quad c_pBak = FTell();
-    uquad m_ppNodes <format=hex>;
+    pointer m_ppNodes <format=hex>;
 
     FSeek(c_pStart + m_ppNodes);
     NodeDefPtr m_nodes(c_pStart)[m_numNodes] <optimize=false>; 
@@ -666,7 +666,7 @@ typedef struct
     PadToAlignment(8);
     
     c_pBak = FTell();
-    uquad m_pEmittedControlParamsInfo <format=hex>;
+    pointer m_pEmittedControlParamsInfo <format=hex>;
 
     FSeek(c_pStart + m_pEmittedControlParamsInfo);
     EmittedControlParamsInfo m_emittedControlParamsInfo;
@@ -675,63 +675,63 @@ typedef struct
     FSeek(c_pBak + 0x8);
 
     c_pBak = FTell();
-    uquad m_pStateMachineNodeIDs <format=hex>;
+    pointer m_pStateMachineNodeIDs <format=hex>;
 
     FSeek(c_pStart + m_pStateMachineNodeIDs);
     NodeIDsArray m_stateMachineNodeIDs;
     FSeek(c_pBak + 0x8);
 
     c_pBak = FTell();
-    uquad m_pMessageEmitterNodeIDs <format=hex>;
+    pointer m_pMessageEmitterNodeIDs <format=hex>;
 
     FSeek(c_pStart + m_pMessageEmitterNodeIDs);
     NodeIDsArray m_messageEmitterNodeIDs;
     FSeek(c_pBak + 0x8);
 
     c_pBak = FTell();
-    uquad m_pMultiplyConnectedNodeIDs <format=hex>;
+    pointer m_pMultiplyConnectedNodeIDs <format=hex>;
 
     FSeek(c_pStart + m_pMultiplyConnectedNodeIDs);
     NodeIDsArray m_multiplyConnectedNodeIDs;
     FSeek(c_pBak + 0x8);
 
     c_pBak = FTell();
-    uquad m_pNodeIDNamesTable <format=hex>;
+    pointer m_pNodeIDNamesTable <format=hex>;
 
     FSeek(c_pStart + m_pNodeIDNamesTable);
     IDMappedStringTable m_nodeIDNamesTable;
     FSeek(c_pBak + 0x8);
 
     c_pBak = FTell();
-    uquad m_pRequestIDNamesTable <format=hex>;
+    pointer m_pRequestIDNamesTable <format=hex>;
 
     FSeek(c_pStart + m_pRequestIDNamesTable);
     IDMappedStringTable m_requestIDNamesTable;
     FSeek(c_pBak + 0x8);
 
     c_pBak = FTell();
-    uquad m_pEventTrackIDNamesTable <format=hex>;
+    pointer m_pEventTrackIDNamesTable <format=hex>;
 
     FSeek(c_pStart + m_pEventTrackIDNamesTable);
     IDMappedStringTable m_eventTrackIDNamesTable;
     FSeek(c_pBak + 0x8);
 
     c_pBak = FTell();
-    uquad m_pTagTable <format=hex>;
+    pointer m_pTagTable <format=hex>;
 
     FSeek(c_pStart + m_pTagTable);
     NodeTagTable m_tagTable;
     FSeek(c_pBak + 0x8);
 
     c_pBak = FTell();
-    uquad m_pTaskQueuingFnTables <format=hex>;
+    pointer m_pTaskQueuingFnTables <format=hex>;
 
     FSeek(c_pStart + m_pTaskQueuingFnTables);
     SharedTaskFnTables m_taskQueuingFnTables;
     FSeek(c_pBak + 0x8);
 
     c_pBak = FTell();
-    uquad m_pOutputCPTaskFnTables <format=hex>;
+    pointer m_pOutputCPTaskFnTables <format=hex>;
 
     FSeek(c_pStart + m_pOutputCPTaskFnTables);
     SharedTaskFnTables m_outputCPTaskFnTables;
@@ -741,7 +741,7 @@ typedef struct
     PadToAlignment(8);
     
     c_pBak = FTell();
-    uquad m_ppMessageDistributors <format=hex>;
+    pointer m_ppMessageDistributors <format=hex>;
 
     FSeek(c_pStart + m_ppMessageDistributors);
     MessageDistributorPtr m_messageDistributors(c_pStart)[m_numMessageDistributors] <optimize=false>;
@@ -751,7 +751,7 @@ typedef struct
     PadToAlignment(8);
 
     c_pBak = FTell();
-    uquad m_pSemanticLookupTable <format=hex>;
+    pointer m_pSemanticLookupTable <format=hex>;
 
     FSeek(c_pStart + m_pSemanticLookupTable);
     SemanticLookupTablePtr m_semanticLookupTables(c_pStart)[m_numSemanticLookupTables] <optimize=false>;
@@ -764,9 +764,9 @@ typedef struct
     bool m_canCombineTrajectoryTransformTasks;
     PadToAlignment(4);
     int m_numNodeEventOnExitMessages;
-    uquad m_pNodeEventOnExitMessages <format=hex>;
-    uquad m_pRigToUberrigMaps <format=hex>;
-    uquad m_pUberrigToRigMaps <format=hex>;
+    pointer m_pNodeEventOnExitMessages <format=hex>;
+    pointer m_pRigToUberrigMaps <format=hex>;
+    pointer m_pUberrigToRigMaps <format=hex>;
     
     if (m_numNodeEventOnExitMessages > 0)
     {
@@ -794,11 +794,11 @@ typedef struct
 {
     local quad pStart = FTell();
     
-    uquad m_pAnimTable <format=hex>;
-    uquad m_pFormatTable <format=hex>;
-    uquad m_pSourceXMDTable <format=hex>;
-    uquad m_pTakeTable <format=hex>;
-    uquad m_pHashes <format=hex>;
+    pointer m_pAnimTable <format=hex>;
+    pointer m_pFormatTable <format=hex>;
+    pointer m_pSourceXMDTable <format=hex>;
+    pointer m_pTakeTable <format=hex>;
+    pointer m_pHashes <format=hex>;
     
     FSeek(pStart + m_pAnimTable);
     IDMappedStringTable m_sourceNSAs;

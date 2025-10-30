@@ -1,0 +1,116 @@
+enum<byte> AttribDataSemanticEnum
+{
+  ATTRIB_SEMANTIC_UPDATE_TIME_POS = 0,              ///< For setting an absolute time position.
+                                                    ///<  or updating time with a delta value.
+  ATTRIB_SEMANTIC_UPDATE_SYNC_EVENT_POS,            ///< For setting an absolute event position
+                                                    ///<  or updating with a delta value.
+  ATTRIB_SEMANTIC_TIME_POS,                         ///< Current and last frame times.
+  ATTRIB_SEMANTIC_ANIM_SAMPLE_POS,                  ///< Current and last frame anim sample positions.
+  ATTRIB_SEMANTIC_FRACTION_POS,                     ///< Current and last frame fractional positions.
+
+  ATTRIB_SEMANTIC_LOOPED_ON_UPDATE,                 ///< Has the playback pos of this node looped.
+
+  ATTRIB_SEMANTIC_TRANSFORM_BUFFER,                 ///< Transform buffer.
+  ATTRIB_SEMANTIC_TRAJECTORY_DELTA_TRANSFORM,       ///< The trajectory channels delta transform for this frame.
+  ATTRIB_SEMANTIC_TRAJECTORY_TRANSFORM,             ///< The trajectory channel transform.  (Needed between frames)
+  ATTRIB_SEMANTIC_TRAJECTORY_DELTA_TRANSFORM_BUFFER,///< A transform buffer with the trajectory in the first channel
+  ATTRIB_SEMANTIC_VELOCITY,                         ///<
+  ATTRIB_SEMANTIC_TRANSFORM_RATES,                  ///<
+  ATTRIB_SEMANTIC_SYNC_EVENT_TRACK,                 ///< Synchronization event track.
+  ATTRIB_SEMANTIC_SAMPLED_EVENTS_BUFFER,            ///< Buffer of sampled events.
+  ATTRIB_SEMANTIC_DURATION_EVENT_TRACK_SET,         ///< A set of duration event tracks.
+
+  ATTRIB_SEMANTIC_LOOP,                             ///< Bool - should the update of this node loop when it reached the end.
+  ATTRIB_SEMANTIC_RIG,                              ///< Describes hierarchy of bones etc.
+  ATTRIB_SEMANTIC_SOURCE_ANIM,                      ///< A source animation in any format.
+
+  ATTRIB_SEMANTIC_START_SYNC_EVENT_INDEX,           ///< DefData: Where this node should start playback, specified in
+                                                    ///<  sync space.
+ 
+  ATTRIB_SEMANTIC_SOURCE_EVENT_TRACKS,              ///<
+
+  ATTRIB_SEMANTIC_ACTIVE_ANIM_SET_INDEX,            ///< The index of the animation set currently in use by the network.
+
+  ATTRIB_SEMANTIC_BLEND_FLAGS,                      ///< Blend node def data flags
+  ATTRIB_SEMANTIC_BLEND_WEIGHTS,                    ///< Blend node internal blend weight interpolants
+  // The following CP semantics correspond to ATTRIB_TYPE_BOOL ... ATTRIB_TYPE_VECTOR4 for simple generation
+  ATTRIB_SEMANTIC_CP_BOOL,                          ///< A control parameter of type bool
+  ATTRIB_SEMANTIC_CP_UINT,                          ///< A control parameter of type unsigned int 
+  ATTRIB_SEMANTIC_CP_PHYSICS_OBJECT_POINTER,        ///< A control parameter of type physics object pointer
+  ATTRIB_SEMANTIC_CP_INT,                           ///< A control parameter of type int
+  ATTRIB_SEMANTIC_CP_FLOAT,                         ///< A control parameter of type float
+  ATTRIB_SEMANTIC_CP_VECTOR3,                       ///< A control parameter of type NMP::Vector3
+  ATTRIB_SEMANTIC_CP_VECTOR4,                       ///< A control parameter of type NMP::Vector4 or NMP::Quat
+  // The previous CP semantics correspond to ATTRIB_TYPE_BOOL ... ATTRIB_TYPE_VECTOR4 for simple generation
+
+  ATTRIB_SEMANTIC_RIG_RETARGET_MAPPING,             ///< Info about a rig for retargeting it to other rigs
+  ATTRIB_SEMANTIC_RETARGET_STORAGE_STATS,           ///< Network-wide info for correct runtime allocation of retargeter
+  ATTRIB_SEMANTIC_MIRRORED_ANIM_MAPPING,            ///< A mapping attribute used to map left and right bones on the rig
+  ATTRIB_SEMANTIC_SYNC_EVENT_OFFSET,                ///< An offset applied to the sync event track
+                                                    ///<  modification in the mirror node
+
+  ATTRIB_SEMANTIC_CHILD_NODE_WEIGHTS,               ///< 
+  ATTRIB_SEMANTIC_BONE_WEIGHTS,                     ///< 
+
+  ATTRIB_SEMANTIC_BONE_IDS,                         ///< An array of bone IDs. (Usually specified against a Rig)
+
+  ATTRIB_SEMANTIC_NODE_SPECIFIC_DEF,                ///< Holds node specific static data.
+  ATTRIB_SEMANTIC_NODE_SPECIFIC_DEF_ANIM_SET,       ///< Holds node specific animation set dependent data.
+  ATTRIB_SEMANTIC_NODE_SPECIFIC_STATE,              ///< Holds node specific state variables.
+  ATTRIB_SEMANTIC_NODE_SPECIFIC_STATE_2,            ///< Holds *another* node specific state. TODO: Try and remove this
+                                                    ///<  complexity.
+
+  ATTRIB_SEMANTIC_PHYSICS_RIG_DEF,                  ///< Holds a pointer to the PhysicsRigDef.
+  ATTRIB_SEMANTIC_PHYSICS_RIG,                      ///< Holds a pointer to the PhysicsRig
+
+  ATTRIB_SEMANTIC_CHARACTER_PROPERTIES,             ///< The current world root transform of the Network/game character and information reflecting
+                                                    ///<  the state of the Networks associated character controller if there is one.
+  ATTRIB_SEMANTIC_CHARACTER_CONTROLLER_DEF,         ///<
+  ATTRIB_SEMANTIC_ANIM_TO_PHYSICS_MAP,              ///<
+
+  ATTRIB_SEMANTIC_PHYSICS_INITIALISATION,           ///< Data needed to initialise physics rig
+  ATTRIB_SEMANTIC_OUTPUT_MASK,                      ///< Array of bools indicating if the anim channel should be calculated.
+  ATTRIB_SEMANTIC_PRE_PHYSICS_TRANSFORMS,           ///<
+  ATTRIB_SEMANTIC_CHARACTER_CONTROLLER_UPDATED,     ///<
+  ATTRIB_SEMANTIC_PHYSICS_UPDATED,                  ///<
+  ATTRIB_SEMANTIC_ROOT_UPDATED,                     ///<
+  ATTRIB_SEMANTIC_MERGED_PHYSICS_RIG_TRANSFORM_BUFFER, ///< Used to make sure that multiple physics nodes synchronise
+                                                       ///<  their control of the physical body.
+
+  ATTRIB_SEMANTIC_TRANSIT_COMPLETE,                 ///< 
+  ATTRIB_SEMANTIC_TRANSIT_REVERSED,                 ///< Used to determine wheteher we should transit to origin or dest
+                                                    ///<  in reversible transitions.
+
+  ATTRIB_SEMANTIC_DURATION_EVENT_MATCHING_OP,       ///< Whether and how to match up events when blending 2 duration event tracks.
+                                                    ///<  See DURATION_EVENT_MATCH_...
+
+  ATTRIB_SEMANTIC_DEAD_BLEND_DEF,                   ///< Definition data of a dead blend.
+  ATTRIB_SEMANTIC_DEAD_BLEND_STATE,                 ///< Active state data of a dead blend.
+  ATTRIB_SEMANTIC_DEAD_BLEND_TRANSFORMS_STATE,      ///< Usually a AttribDataTransformBuffer that is used to cache a nodes 
+                                                    ///<  transform buffer internally. (Dead blending transforms etc).
+
+  ATTRIB_SEMANTIC_PLAYBACK_POS_INIT,                ///< Structure used by transitions to pass down playback
+                                                    ///<  initialisation information to its destination state.
+
+  ATTRIB_SEMANTIC_EMITTED_MESSAGES_MAP,             ///< 
+  ATTRIB_SEMANTIC_EMITTED_MESSAGES,                 ///< 
+
+  ATTRIB_SEMANTIC_UNEVEN_TERRAIN_IK_SETUP,            ///< IK setup information for the uneven terrain node
+  ATTRIB_SEMANTIC_UNEVEN_TERRAIN_FOOT_LIFTING_TARGET, ///< Foot lifting target for the uneven terrain node
+  ATTRIB_SEMANTIC_UNEVEN_TERRAIN_PREDICTION_DEF,    ///< Node definition data for the predictive uneven terrain node
+  ATTRIB_SEMANTIC_UNEVEN_TERRAIN_PREDICTION_STATE,  ///< Foot plant prediction state for the uneven terrain node
+
+  ATTRIB_SEMANTIC_JOINT_LIMITS,                     ///< Kinematic joint limits for a rig.
+  ATTRIB_SEMANTIC_RETARGET_RIG_MAP,                 ///< Generic mapping between joints of two rigs.
+
+  ATTRIB_SEMANTIC_UPDATE_TIME_POS_T_MINUS_ONE,      ///< Dead blend cache data, update time pos from previous frame
+  ATTRIB_SEMANTIC_TRAJECTORY_DELTA_T_MINUS_ONE,     ///< Dead blend cache data, trajectory delta from previous frame
+  ATTRIB_SEMANTIC_TRANSFORM_BUFFER_T_MINUS_ONE,     ///< Dead blend cache data, transform buffer from previous frame
+  ATTRIB_SEMANTIC_TRANSFORM_BUFFER_T_MINUS_TWO,     ///< Dead blend cache data, transform buffer from previous but 1 frame
+
+  ATTRIB_SEMANTIC_RETARGET_STATE,                   ///< Persistent state data for retargeting.
+
+  ATTRIB_SEMANTIC_NM_MAX,
+
+  ATTRIB_SEMANTIC_NA = 0xFFFF
+};

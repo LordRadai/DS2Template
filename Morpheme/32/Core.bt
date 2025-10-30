@@ -1,5 +1,11 @@
+local uint ptrSize = 4;
+typedef uint pointer;
+
 void PadToAlignment(int iAlignment)
 {
+    if (iAlignment == 0)
+        return;
+        
     local quad pPos = FTell();
     local quad remainder = pPos % iAlignment;
 	

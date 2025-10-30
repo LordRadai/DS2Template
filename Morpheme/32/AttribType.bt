@@ -25,6 +25,7 @@ enum <ushort> AttribType
     ATTRIB_TYPE_DURATION_EVENT_TRACK_SET = 19,
     ATTRIB_TYPE_RIG = 20,
     ATTRIB_TYPE_SOURCE_ANIM = 21,
+	ATTRIB_TYPE_RIG_TO_ANIM_MAP = 22,								 
     ATTRIB_TYPE_SOURCE_EVENT_TRACKS = 23,
     ATTRIB_TYPE_HEAD_LOOK_SETUP = 24,
     ATTRIB_TYPE_HEAD_LOOK_CHAIN = 25,
@@ -42,8 +43,11 @@ enum <ushort> AttribType
     ATTRIB_TYPE_CLOSEST_ANIM_STATE = 37,
     ATTRIB_TYPE_STATE_MACHINE_DEF = 38,
     ATTRIB_TYPE_STATE_MACHINE = 39,
+    ATTRIB_TYPE_PHYSICS_RIG = 40,
+    ATTRIB_TYPE_PHYSICS_RIG_DEF = 41,
     ATTRIB_TYPE_CHARACTER_PROPERTIES = 42,
     ATTRIB_TYPE_CHARACTER_CONTROLLER_DEF = 43,
+    ATTRIB_TYPE_ANIM_TO_PHYSICS_MAP = 44,
     ATTRIB_TYPE_PHYSICS_SETUP = 45,
     ATTRIB_TYPE_PHYSICS_SETUP_ANIM_SET = 46,
     ATTRIB_TYPE_PHYSICS_STATE = 47,
@@ -78,8 +82,10 @@ enum <ushort> AttribType
     ATTRIB_TYPE_SCATTER_BLEND_ANALYSIS_DEF = 77,
     ATTRIB_TYPE_SCATTER_BLEND_1D_DEF = 78,
     ATTRIB_TYPE_SCATTER_BLEND_2D_DEF = 79,
+    ATTRIB_TYPE_SCATTER_BLEND_2D_STATE = 80,
     ATTRIB_TYPE_EMIT_MESSAGE_ON_CP_VALUE = 81,
     ATTRIB_TYPE_PHYSICS_INFO_DEF = 82,
+    ATTRIB_TYPE_PHYSICS_OBJECT_POINTER = 83,
     ATTRIB_TYPE_JOINT_LIMITS = 84,
     ATTRIB_TYPE_BLEND_FLAGS = 85,
     ATTRIB_TYPE_BLEND_WEIGHTS = 86,
@@ -92,6 +98,45 @@ enum <ushort> AttribType
     ATTRIB_TYPE_C_C_OVERRIDE_PROPERTIES_DEF = 93,
     ATTRIB_TYPE_C_C_OVERRIDE_CONDITIONS = 94,
 };
+
+typedef struct
+{
+    int64 m_size;
+    int64 m_alignment;
+} Format <read=ReadFormat>;
+
+enum<uint> BlendMode
+{
+    BLEND_MODE_INTERP_ATT_INTERP_POS = 0,
+    BLEND_MODE_INTERP_ATT_ADD_POS    = 1, 
+    BLEND_MODE_ADD_ATT_LEAVE_POS     = 2, 
+    BLEND_MODE_ADD_ATT_ADD_POS       = 3, 
+    BLEND_MODE_SUB_ATT_SUB_POS       = 4 
+};
+
+string ReadFormat(Format& data)
+{
+    local string str = "";
+    
+    SPrintf(str, "(%d, %d)", data.m_size, data.m_alignment);
+    
+    return str;
+}
+
+typedef struct
+{
+    int m_numBits;
+    int m_numUInts;     
+    int m_data[m_numUInts] <format=binary>;
+} UsedFlags <read=ReadUsedFlags>;
+
+string ReadUsedFlags(UsedFlags &data)
+{
+    local string str = "";
+    SPrintf(str, "(%d, %d)", data.m_numBits, data.m_numUInts);
+    
+    return str;
+}
 
 typedef struct(int iAlignment, quad cStart)
 {    
@@ -132,7 +177,8 @@ typedef struct(int iAlignment, quad cStart)
 typedef struct(int iAlignment, quad cStart)
 {      
     int m_count;
-    ulong m_pData <format=hex>;
+    PadToAlignment(8);
+    quad m_pData <format=hex>;
     
     if (m_count > 0)
     {
@@ -146,7 +192,8 @@ typedef struct(int iAlignment, quad cStart)
 typedef struct(int iAlignment, quad cStart)
 {      
     int m_count;
-    ulong m_pData <format=hex>;
+    PadToAlignment(8);    
+    pointer m_pData <format=hex>;
     
     if (m_count > 0)
     {
@@ -160,7 +207,8 @@ typedef struct(int iAlignment, quad cStart)
 typedef struct(int iAlignment, quad cStart)
 {
     int m_count;
-    ulong m_pData <format=hex>;
+    PadToAlignment(8);
+    pointer m_pData <format=hex>;
     
     if (m_count > 0)
     {    
@@ -174,7 +222,8 @@ typedef struct(int iAlignment, quad cStart)
 typedef struct(int iAlignment, quad cStart)
 {    
     int m_count;
-    ulong m_pData <format=hex>;
+    PadToAlignment(8);    
+    pointer m_pData <format=hex>;
     
     if (m_count > 0)
     {    
@@ -187,68 +236,56 @@ typedef struct(int iAlignment, quad cStart)
 
 typedef struct(int iAlignment, quad cStart)
 {
-    Vector4 m_vVar1;
-    int m_iVar2;
-    bool m_bVar3;
-    bool m_bVar4;
+      float m_currentPosAdj;
+      float m_previousPosAdj;
+      float m_currentPosReal;
+      float m_previousPosReal;
+      float m_delta;
+      bool  m_setWithAbs;
+      bool  m_inclusiveStart;
     
     PadToAlignment(iAlignment);      
 } AttribPlaybackPos;
 
 typedef struct(int iAlignment, quad cStart)
-{
-    bool m_bVar3;
-    PadToAlignment(iAlignment);
-    
-    Quaternion m_qVar0;
-    Vector4 m_vVar1;
-    
+{    
+    Quaternion m_deltaAtt;
+    Vector3 m_deltaPos;
+    bool m_filteredOut;
+   
     PadToAlignment(iAlignment);      
 } AttribTrajectoryDeltaTransform;
 
 typedef struct(int iAlignment, quad cStart)
 {    
-    ulong m_rigBundleID <format=hex>;
-    int m_iVar2;
-    int m_iVar3;
+    pointer m_bundleID <format=hex>;
+    Format m_rigMemReqs;
     
     PadToAlignment(iAlignment);
 } AttribRig;
 
 typedef struct(int iAlignment, quad cStart)
 {    
-    int m_iVar1;
-    int m_iVar2;
-    int m_iVar3;
-    int m_iVar4;
-    int m_iVar5;
-    int m_iVar6;
-    int m_iVar7;
-    float m_fVar8;
-    float m_fVar9;
-    float m_fVar10;
-    float m_fVar11;
-    int m_iVar12;
-    int m_iVar13;
-    float m_fVar14;
-    int m_iVar15;
-    float m_fVar16;
-    float m_fVar17;
-    float m_fVar18;
-    float m_fVar19;
-    PadToAlignment(8);
-    ulong m_pVar20 <format=hex>;
-    PadToAlignment(8);
-    int m_animIndex;
-    float m_fVar22;
-    byte m_bVar23;
-    byte m_bVar24;
-    byte m_startEventIndex;
-    PadToAlignment(4);
-    float m_clipStart;
-    float m_clipEnd;
-    float m_animLen;
-    int m_iVar29;
+    pointer m_pAnim <format=hex>;
+    pointer m_pRigToAnimMap <format=hex>;
+    Vector3 m_transformAtStartPos;
+    Quaternion m_transformAtStartQuat;
+    Vector3 m_transformAtEndPos;
+    Quaternion m_transformAtEndQuat;
+    pointer m_pSourceTrajectoryChannel <format=hex>;
+    uint m_animSize;
+    uint m_rigToAnimMapSize;
+    uint m_trajectorySize;
+    uint m_animAssetID;    
+    uint m_rigToAnimMapAssetID <format=hex>;
+    ubyte m_registeredAnimFormatIndex;
+    ubyte m_startSyncEventIndex;
+    ubyte m_clipStartSyncEventIndex;
+    ubyte m_clipEndSyncEventIndex;
+    float m_clipStartFraction;
+    float m_clipEndFraction;
+    float m_sourceAnimDuration;
+    int m_syncEventTrackIndex;
     bool m_playBackwards;
     
     PadToAlignment(iAlignment);
@@ -257,21 +294,31 @@ typedef struct(int iAlignment, quad cStart)
 typedef struct(quad cStart)
 {
     int m_numTracks;
-    ulong m_pEventTracks <format=hex>;
-    ulong m_pDataSizes <format=hex>;
+    PadToAlignment(8);
+    pointer m_pEventTracks <format=hex>;
+    pointer m_pDataSizes <format=hex>;
     
     local quad cBak = FTell();
     if (m_numTracks > 0)
     {
         FSeek(cStart + m_pEventTracks);
-        ulong m_bundleID[m_numTracks] <format=hex>;
+        pointer m_bundleID[m_numTracks] <format=hex>;
         
         FSeek(cStart + m_pDataSizes);      
         int m_dataSize[m_numTracks];
         
         FSeek(cBak);
     }
-} EventTrackList;
+} EventTrackList <read=ReadEventTrackList>;
+
+string ReadEventTrackList(EventTrackList &data)
+{
+    local string str = "";
+    
+    SPrintf(str, "%d", data.m_numTracks);
+    
+    return str;
+}
 
 typedef struct(int iAlignment, quad cStart)
 {
@@ -285,88 +332,92 @@ typedef struct(int iAlignment, quad cStart)
 
 typedef struct
 {
-    short m_id;    
-    short m_sVar0;
-    ulong m_pVar1 <format=hex>;
-    
-    if (m_sVar0 == 0)
-        Skip(4);
-    else
-        short m_unk[2];    
-        
-    short m_transitCondCount;
-    PadToAlignment(4);
-    ulong m_pVar3 <format=hex>;
-    short m_sVar4;
-    short m_sVar5;
-    ulong m_pVar6 <format=hex>;       
-} SMChildNode <read=ReadSMChildNode>;
+    local quad pStart = FTell();
+    local quad pBak;
 
-string ReadSMChildNode(SMChildNode &data)
+    short m_nodeID;    
+    short m_numEntryConditions;
+    PadToAlignment(8);
+    pointer m_pEntryConditionIndexes <format=hex>;
+    
+    short m_sourceStateID;
+    short m_destinationStateID;
+    
+    if (m_numEntryConditions > 0)
+    {
+        pBak = FTell();
+        FSeek(pStart + m_pEntryConditionIndexes);
+        short m_entryConditionIndexes[m_numEntryConditions];
+        PadToAlignment(4);
+    
+        FSeek(pBak); 
+    }         
+    
+    short m_numExitConditions;
+    PadToAlignment(8);
+    pointer m_pExitConditionIndexes <format=hex>;
+    short m_numExitBreakoutConditions;
+    short m_numExitTransitionStates;
+    PadToAlignment(8);    
+    pointer m_pExitTransitionStateIDs <format=hex>;
+    
+    pBak = FTell();
+    
+    if (m_numExitConditions > 0)
+    {
+        FSeek(pStart + m_pExitConditionIndexes);
+        short m_exitConditionIndexes[m_numExitConditions];
+        FSeek(pBak);
+    }
+    
+    pBak = FTell();
+    
+    if (m_numExitTransitionStates > 0)
+    {
+        FSeek(pStart + m_pExitTransitionStateIDs);
+        short m_exitTransitionStateIDs[m_numExitTransitionStates];
+        FSeek(pBak);
+    }    
+       
+} StateDef <read=ReadStateDef>;
+
+string ReadStateDef(StateDef &data)
 {
     local string str;
-    SPrintf(str, "(id=%d, transitCount=%d)", data.m_id, data.m_transitCondCount);
+    SPrintf(str, "(%d, %d, %d)", data.m_nodeID, data.m_numEntryConditions, data.m_numExitTransitionStates);
     
     return str;
 }
 
 typedef struct
 {
-    int m_iVar3;
-    int m_iVar4;
-} TransitConditionDefInfoData;
-
-typedef struct
-{
-    int m_index;
-    int m_iVar1;
-    int m_count;    
-    int m_iVar3;
-    int m_iVar4;
-} TransitConditionDefInfo;
-
-typedef struct(int iDataSize)
-{    
-    short m_sVar0;
-    short m_sVar1;
-    int m_ivar2;
-    Skip(4);
-    short m_sVar5;
-    PadToAlignment(4);    
-    int m_dataSize;
-    short m_sVar6;
-    short m_sVar7;
-    ulong m_pVar8 <format=hex>;
-    
-    if (iDataSize > 28)
-        ubyte m_data[iDataSize - 28];
-} TransitConditionDefHeader;
-
-typedef struct
-{
-    TransitConditionDef m_typeID;
-    byte m_bVar0;
-    PadToAlignment(4);
-    int m_iVar1[8];
-    
-    CreateTransitConditionData(m_typeID);
-    
-    PadToAlignment(4);
+    TransitConditionDef m_type;
+    byte m_invert;
+    Skip(5);
+    pointer m_locateFn;
+    pointer m_dislocateFn;
+    pointer m_relocateFn;
+    pointer m_getMemReqsFn;
+    pointer m_initFn;
+    pointer m_updateFn;
+    pointer m_queueDepsFn;
+    pointer m_resetFn;    
+    CreateTransitConditionData(m_type);
 } TransitConditionDefData<read=ReadTransitConditionDefData>;
 
 string ReadTransitConditionDefData(TransitConditionDefData &data)
 {
-    local string str = EnumToString(data.m_typeID);
+    local string str = EnumToString(data.m_type);
     
     if (str == "")
-        SPrintf(str, "TransitCondition_%d", data.m_typeID);
+        SPrintf(str, "TransitCondition_%d", data.m_type);
         
     return str;
 }
 
 typedef struct(int iCount, int pBase)
 {
-    ulong m_pTransitConditionDefs[iCount] <format=hex>;
+    pointer m_pTransitConditionDefs[iCount] <format=hex>;
     
     local int i = 0;
     
@@ -377,317 +428,339 @@ typedef struct(int iCount, int pBase)
     }
 } TransitConditionDefs;
 
+typedef struct(int iAlignment, quad cStart)
+{
+    short m_defaultStartingStateID;
+    short m_numStates;
+    PadToAlignment(8);
+    pointer m_pStateDefs <format=hex>;
+    pointer m_pGlobalStateDef <format=hex>;
+    bool m_prioritiseGlobalTransitions;
+    PadToAlignment(2);
+    short m_numConditions;
+    PadToAlignment(8);
+    pointer m_pConditions <format=hex>;
+    
+    FSeek(cStart + m_pStateDefs);
+    StateDef m_stateDefs[m_numStates] <optimize=false>;
+    
+    FSeek(cStart + m_pGlobalStateDef);   
+    StateDef m_globalStateDef;
+    
+    local int i = 0;
+    
+    if (m_numConditions > 0)
+    {
+        FSeek(cStart + m_pConditions);
+        TransitConditionDefs m_conditions(m_numConditions, cStart);
+    }
+    
+    PadToAlignment(iAlignment);
+} AttribStateMachineDef;
+
+//Missing pointers
 typedef struct
 {
-    int m_iVar0;
-    int m_pVar1 <format=hex>;
-    int m_iVar2;
-    int m_iVar3;
-    int m_iVar4;
-} ClosestAnimDefUnkData;
+    Vector3 m_scales;
+    Vector3 m_offsets;
+    int m_lenght;
+    pointer m_sampledKeys <format=hex>;
+} CompressedDataBufferVector3;
 
-typedef struct(quad cStart, int iInputCount)
+//Missing pointers
+typedef struct
 {
-    ulong m_iVar0;
-    ulong m_iVar1;
-    ulong m_iBlendWeightsAffected;
-    ulong m_iInputCountAffected;
-    int m_iVar4[iInputCount];
-    PadToAlignment(16);
-} ClosestAnimDefUnkDataHeader;
+    Vector3 m_scales;
+    Vector3 m_offsets;
+    int m_lenght;
+    pointer m_pSampledKeyesX <format=hex>;
+    pointer m_pSampledKeyesY <format=hex>;
+    pointer m_pSampledKeyesZ <format=hex>;
+} CompressedDataBufferQuat;
+
+//Missing pointers
+typedef struct(int lenght)
+{
+    pointer m_pSourceTransformsPos <format=hex>;
+    pointer m_pSourceTransformsAtt <format=hex>;
+    pointer m_pSourceTransformsPosVel <format=hex>;
+    pointer m_pSourceTransformsAngVel <format=hex>;
+} ClosestAnimSourceData;
 
 typedef struct(int iAlignment, quad cStart)
 {
-    int m_iVar1;
-    float m_iVar2;
-    int m_iVar3;
-    int m_iVar4;
-    int m_iVar5;
-    int m_iVar6;
-    int m_iVar7;
-    float m_fVar8;
-    bool m_useCharacterRoot;
-    PadToAlignment(4);
-    float m_blendDuration;
-    int m_iVar11 <format=hex>;
-    int m_jointCount;
+    Vector3 m_rootRotationAxis;
+	Quaternion m_upAlignAtt;
+	bool m_useRootRotationBlending;
+	PadToAlignment(4);
+    float m_fractionThroughSource;
+    float m_maxRootRotationAngle;
+    int m_numAnimJoints;
     bool m_precomputeSourcesOffline;
-    bool m_bVar14;
+    bool m_useVelocity;
     PadToAlignment(4);
-    float m_fVar15;
-    float m_fVar16;
-    float m_orientationInfluence;
-    int m_inputCount;
-    int m_pUnkData <format=hex>;
-    FSeek(cStart + m_pUnkData);
+    float m_positionScaleFactor;
+    float m_orientationScaleFactor;
+    float m_influenceBetweenPosAndOrient;
+    int m_numSources;
+    pointer m_pSourceDataArray <format=hex>;
     
-    ClosestAnimDefUnkDataHeader m_unkData(cStart, m_inputCount);
+    local quad cBak = FTell();
+    FSeek(cStart + m_pSourceDataArray);
+    pointer m_sourceDataArray[m_numSources] <format=hex>;
+    
+    local int i = 0;
+    for (i = 0; i < m_numSources; i++)
+    {
+        FSeek(cStart + m_sourceDataArray[i]);
+        ClosestAnimSourceData m_sourceData;
+    }
+    
+    FSeek(cBak);
+    
+    int m_numDescendants;
+    pointer m_pDescendantIDs <format=hex>;
+    
+    FSeek(cStart + m_pSourceDataArray);
+    int m_descendantIDs[m_numDescendants];
     
     PadToAlignment(iAlignment);
 } AttribClosestAnimDef;
 
 typedef struct(int iAlignment, quad cStart)
 {
-    int m_numJointWeights;
-    int m_numJoints;
-    ulong m_pWeights <format=hex>;
-    ulong m_pJointIndices <format=hex>;
-    ulong m_pUnkIndices <format=hex>;
+    int m_numAnimWeights;
+    int m_numEntries;
+    pointer m_pWeights <format=hex>;
+    pointer m_pRigChannels <format=hex>;
+    pointer m_pAnimChannels <format=hex>;
 
     FSeek(cStart + m_pWeights);
-    float m_jointWeights[m_numJointWeights];
+    float m_weights[m_numJointWeights];
     
     FSeek(cStart + m_pJointIndices);
-    short m_jointIndices[m_numJoints];
+    short m_rigChannels[m_numJoints];
     
-    FSeek(cStart + m_pUnkIndices);
-    short m_unkIndices[m_numJoints];
+    FSeek(cStart + m_pAnimChannels);
+    short m_animChannels[m_numJoints];
     
     PadToAlignment(iAlignment);    
 } AttribClosestAnimDefAnimSet;
 
 typedef struct(int iAlignment, quad cStart)
-{
-    short m_unk;
-    short m_totalChildCount;
-    ulong m_pChildNodes <format=hex>;
-    ulong m_pChildTransitCondHeader <format=hex>;
-    bool m_bVar0;
-    PadToAlignment(2);
-    short m_childTransitConditionCount;
-    ulong m_pChildTransitCond <format=hex>;
-    
-    FSeek(cStart + m_pChildNodes);
-    SMChildNode m_childNodeInfo[m_totalChildCount] <optimize=false>;
-    
-    FSeek(cStart + m_pChildTransitCondHeader);
-    
-    TransitConditionDefHeader m_childTransitConditionDefHeader(m_pChildTransitCond - m_pChildTransitCondHeader);
-    
-    if (m_childTransitConditionCount > 0)
-    {
-        FSeek(cStart + m_pChildTransitCond);
-        TransitConditionDefs m_childTransitConditionDefs(m_childTransitConditionCount, cStart);
-    }
-    
-    PadToAlignment(iAlignment);
-} AttribStateMachineDef;
-
-typedef struct(int iAlignment, quad cStart)
 { 
-    float m_fVar1;
+    float m_defaultBlendWeight;
     bool m_updateTargetByDeltas;
     bool m_worldSpaceTarget;
     PadToAlignment(iAlignment);        
 } AttribHeadLookSetup;
 
+enum<int> LimitType
+{
+  NMSTANDARD_JOINTLIMITS = 0,
+};
+
 typedef struct
 {
-    bool m_bVar0;
-    PadToAlignment(4);
-    float m_blendWeight;
-    float m_fVar2;
-    bool m_bVar3;
-    bool m_bVar4;
-    bool m_bVar5;
-    PadToAlignment(4);
-    int m_iVar6;
-    float m_fVar7;
+    Quaternion frame;
+    Quaternion offset;
+    Vector3 lower;
+    Vector3 upper;
+    LimitType limitType;
     PadToAlignment(16);
-    Vector4 m_vVar8;
-    Vector4 m_vVar9;
-    Vector4 m_vVar10;
-    Vector4 m_vVar11;
-    int m_iVar12;
+} JointLimitsParam <read=ReadJointLimitsParam>;
+
+string ReadJointLimitsParam(JointLimitsParam &data)
+{
+    local string str = "";
+    SPrintf(str, "%s", EnumToString(data.limitType));
+    
+    return str;
+}
+
+typedef struct
+{
+    Vector3 hingeAxis;
+    bool isHinge;
+    PadToAlignment(4);
+    float weight;
+    float redundancyControlWeight;
+    bool isLimited;
+    bool applyHardLimits;
+    bool applySoftLimits;
+    PadToAlignment(4);
+    float hardLimitRepulsionFactor;
+    float softLimitSoftness;
+    
     PadToAlignment(16);
-    bool m_bVar13;
-    PadToAlignment(16);   
-} IKJointData;
+    JointLimitsParam limits;
+    PadToAlignment(16);
+    bool enabled;
+    PadToAlignment(16);
+} IKJointParam;
+
+typedef struct(int numJoints)
+{
+    local quad cStart = FTell();
+    
+    Vector3 pointingVector;
+    Vector3 worldUpAxis;
+    float bias;
+    bool minimiseRotation;
+    bool keepUpright;
+    PadToAlignment(4);
+    quad pPerJointParams <format=hex>;
+    
+    local quad cBak = FTell();
+    FSeek(cStart + pPerJointParams);
+    IKJointParam m_perJointParams[numJoints] <optimize=false>;
+    FSeek(cBak);
+} PointIKParams;
 
 typedef struct(int iAlignment, quad cStart)
 {
-    Vector3 m_pointingVector;
+    Vector3 m_endEffectorOffset;
     int m_endJointIndex;
     int m_rootJointIndex;
-    int m_numAffectedJoints;
-    int m_unkAlignment;
-    PadToAlignment(16);
-    Vector3 m_endEffectorOffset;
-    int m_iVar7;
-    float m_fVar8;
-    float m_fVar9;
-    int m_iVar10;
-    int m_iVar11;
-    bool m_bVar12;
-    bool m_keepUpright;
-    PadToAlignment(4);
-    int m_jointDataAlignment;
-    PadToAlignment(16);
-        
-    FSeek(FTell() + 0x10);
+    int m_numJoints;
+    PadToAlignment(iAlignment);
+    quad m_pParams <format=hex>;
     
-    local int i = 0;
-    for (i = 0; i < m_numAffectedJoints; i++)
+    if (m_pParams)
     {
-        IKJointData m_jointData;
-        FSeek(FTell() + 0x10);
+        local quad cBak = FTell();
+        FSeek(cStart + m_pParams);
+        PointIKParams  m_params(m_numJoints + 1);
+        FSeek(cBak);
     }
-            
-    IKJointData m_rootJointData;
-
+    
     PadToAlignment(iAlignment);        
 } AttribHeadLookChain;
 
 typedef struct(int iAlignment, quad cStart)
 {
-    float m_fVar0;
-    bool m_characterWorldTarget;
+    Vector3 m_worldUpAxis;
+    float m_defaultBlendWeight;
+    bool m_keepUpright;
+    bool m_worldSpaceTarget;
     bool m_applyJointLimits;
-    bool m_keepGunUpright;
-    PadToAlignment(4);
-    Vector3 m_up;
     PadToAlignment(iAlignment);    
 } AttribGunAimSetup;
 
 typedef struct(int iAlignment, quad cStart)
 {     
-    int m_iVar0;
-    int m_numJoints;
-    int m_iVar2;
-    int m_iVar3;
-    int m_iVar4;
-    int m_iVar5;
-    Vector3 m_vVar7;
-    Vector3 m_vVar8;
-    Skip(16);
-    Vector3 m_vVar9;
-    int m_iVar10;
-    int m_iVar11;
-    int m_iVar12;
-    float m_fVar13;
-    bool m_bvar14;
-    bool m_bVar15;
+    Vector3 m_gunPivotOffset;
+    Vector3 m_gunBarrelOffset;
+    Vector3 m_gunPointingVector3;
+    Vector3 m_secondaryArmHingeAxis;
+    Vector3 m_primaryArmHingeAxis;
+    int m_spineRootJointIndex;
+    int m_secondaryWristJointIndex;
+    int m_primaryWristJointIndex;
+    float m_spineBias;
+    bool m_updateTargetByDeltas;
+    bool m_useSecondaryArm;
     PadToAlignment(4);
-    int m_iVar16;
-    int m_iVar17;
-    PadToAlignment(iAlignment);
-    Vector3 m_vVar18;
-    Vector3 m_vVar19;
-    int m_iVar20;
-    bool m_bVar21;
-    bool m_bVar22;
-    PadToAlignment(4);
-    int m_iVar23;
+    int m_numAimJoints;
+    pointer m_pIkParams <format=hex>;
     
-    PadToAlignment(iAlignment);
-    
-    local int i = 0;
-    for (i = 0; i < m_iVar10 - 1; i++)
+    if (m_pIkParams)
     {
-        Skip(16);
-        IKJointData m_jointData;
+        local quad cBak = FTell();
+        
+        FSeek(cStart + m_pIkParams);
+        PointIKParams m_ikParams(m_numAimJoints + 2);
+        FSeek(cBak);
     }
-
-    PadToAlignment(iAlignment);    
+    
+    int m_gunJointIndex;
+    int m_gunBindJointIndex;
+    PadToAlignment(iAlignment);
 } AttribGunAimIKChain;
 
 typedef struct(int iAlignment, quad cStart)
 {
+    Vector3 m_upAxis;
     float m_worldFootOrientationWeight;
-    float m_footTurnWeight;
-    float m_kneeSwivelWeight;
-    float m_up[3];
+    float m_swivelOrientationWeight;
     bool m_localReferenceFrame;
-    bool m_bVar0;
+    bool m_keepWorldFootOrientation;
     
     PadToAlignment(iAlignment);   
 } AttribHipsIKDef;
 
 typedef struct(int iAlignment, quad cStart)
 {
+    Vector3 m_leftKneeRotationAxis;
+    Vector3 m_rightKneeRotationAxis;
+    int m_leftLegIndex[4];
+    int m_rightLegIndex[4];
     int m_hipsIndex;
-    bool m_useBallJoints;
-    PadToAlignment(16);    
-    Vector3 m_leftKneeAxis;
-    Vector3 m_rightKneeAxis;
-    int m_leftHipIndex;
-    int m_leftKneeIndex;
-    int m_leftAnkleIndex;
-    int m_leftBallIndex;
-    int m_rightHipIndex;
-    int m_rightKneeIndex;
-    int m_rightAnkleIndex;
-    int m_rightBallIndex;
+    bool m_useBallJoints;   
     
     PadToAlignment(iAlignment);   
 } AttribHipsIKAnimSetDef;
 
 typedef struct(int iAlignment, quad cStart)
 {
-
-    
     Quaternion m_orientation;
+    float m_fVar1;
+    float m_fvar2;
     bool m_assumeSimpleHierarchy;
     bool m_keepEndEffOrientation;
-    bool m_globalReferenceAxis;
+    bool m_userControlledOrientation;
     bool m_updateTargetByDeltas;
     bool m_worldSpaceTarget;
+    bool m_useSpecifiedJointAsTarget;
+    bool m_useSpecifiedJointOrientation;
     PadToAlignment(4);
     int m_iVar1;
-    float m_fVar2;
-    int m_iVar3;
     
     PadToAlignment(iAlignment);    
 } AttribTwoBoneIKSetup;
 
 typedef struct(int iAlignment, quad cStart)
 {
-
-    Vector3 m_midJointRotationAxis;
-    Vector3 m_plane;
+    Vector3 m_midJointRotAxis;
+    Vector3 m_midJointReferenceAxis;
     int m_endJointIndex;
     int m_midJointIndex;
     int m_rootJointIndex;
-    bool m_bVar1;
+    int m_targetJointIndex;
+    bool m_globalReferenceAxis;
     
     PadToAlignment(iAlignment);    
 } AttribTwoBoneIKChain;
 
 typedef struct(int iAlignment, quad cStart)
 {
-
-    
-    int m_iVar0;
+    int m_upAxis;
     bool m_lockVerticalMotion;
     bool m_assumeSimpleHierarchy;
     bool m_trackCharacterController;    
     PadToAlignment(4);
-    float m_fVar4;
-    int m_iVar5;
+    float m_defaultFkIkWeight;
+    float m_defaultSwivelContributionToOrientation;
     
     PadToAlignment(iAlignment);    
 } AttribLockFootSetup;
 
 typedef struct(int iAlignment, quad cStart)
 { 
-    Vector3 m_kneeAxis;
-    Vector3 m_ballAxis;
-    Vector3 m_footOrientation;
-    float m_fVar0;
-    float m_fVar1;
-    int m_hipIndex;
-    int m_kneeIndex;
-    int m_ankleIndex;
-    int m_ballIndex;
-    int m_toeIndex;
-    int m_footbalEventID;
-    float m_fVar2;
-    float m_fVar3;
-    float m_fVar4;
-    float m_fVar5;
-    float m_fVar6;
+    Vector3 m_kneeRotationAxis;
+    Vector3 m_ballRotationAxis;
+    Vector3 m_footLevelVector;
+    float m_lowerHeightBound;
+    float m_toeLowerHeightBound;
+    int m_jointIndex[5];
+    int m_footfallEventID;
+    float m_footPivotOffsetThreshold;
+    float m_catchUpSpeedFactor;
+    float m_snapToSourceDistance;
+    float m_straightestLegFactor;
+    float m_ankleLowerHeightBound;
     bool m_fixToeGroundPenetration;
-    bool m_useBall;
+    bool m_useBallJoint;
     bool m_fixGroundPenetration;
     bool m_fixFootOrientation;
     
@@ -696,7 +769,7 @@ typedef struct(int iAlignment, quad cStart)
 
 typedef struct(int iAlignment, quad cStart)
 {
-    ulong m_bundleID <format=hex>;
+    pointer m_bundleID <format=hex>;
     
     PadToAlignment(iAlignment);
 } AttribPhysicsInit;
@@ -746,18 +819,20 @@ typedef struct(int iAlignment, quad cStart)
 
 typedef struct(int iAlignment, quad cStart)
 {
-    Vector4 m_smoothTime;
-    bool m_useInitValueOnInit;
-    bool m_smoothVelocity;
-    PadToAlignment(iAlignment);
-    Vector4 m_initialValue;
+    Vector3 m_vectorRate;
+    float m_floatRate;
+    float m_initialValueX;
+    float m_initialValueY;
+    float m_initialValueZ;
+    bool m_useInitValOnInit;
+    bool m_smoothVel;
     PadToAlignment(iAlignment);    
 } AttribSmoothFloat;
 
 typedef struct(int iAlignment, quad cStart)
 {
-    ubyte m_data[20];
-    
+    Vector3 m_lastVector;
+    float m_lastFloat;    
     PadToAlignment(iAlignment);    
 } AttribRateOfChangeOperation;
 
@@ -765,7 +840,7 @@ typedef struct(int iAlignment, quad cStart)
 {    
     float m_min;
     float m_max;
-    float m_interval;
+    float m_duration;
     int m_seed;
     
     PadToAlignment(iAlignment);    
@@ -773,33 +848,46 @@ typedef struct(int iAlignment, quad cStart)
 
 typedef struct(int iAlignment, quad cStart)
 {    
-    int m_noise : 1;
-    int m_sawWave : 2;
-    int m_easeInEaseOut : 3;
+    int m_flags : 1;
     float m_noiseSawFrequency;
-    float m_fVar3;
-    ulong m_pData1 <format=hex>;
-    ulong m_pData2 <format=hex>;
-    ulong m_pData3 <format=hex>;
+    float m_timeOffset;
+    pointer m_pTable1 <format=hex>;
+    pointer m_pTable2 <format=hex>;
+    pointer m_pTable3 <format=hex>;
     
     PadToAlignment(iAlignment);
     
-    FSeek(cStart + m_pData1);
-    ubyte m_data1[28];
+    FSeek(cStart + m_pTable1);
+    ubyte m_data1[7];
     
-    FSeek(cStart + m_pData2);
-    ubyte m_data2[76];
+    FSeek(cStart + m_pTable2);
+    ubyte m_data2[19];
 
-    FSeek(cStart + m_pData3);
-    ubyte m_data3[124];
+    FSeek(cStart + m_pTable3);
+    ubyte m_data3[31];
         
     PadToAlignment(iAlignment);    
 } AttribNoiseGen;
 
+  enum<int> EvaluateMode
+  {
+    kEvalWhenActivating = 0,
+    kEvalEveryFrame = 1,
+    kEvalOnLoop = 2
+  };
+
+  enum<int> InputSelectionMethod
+  {
+    kClosest = 0,
+    kFloor,
+    kCeiling,
+    kWeightRampingInvalid
+  };
+
 typedef struct(int iAlignment, quad cStart)
 {
-    int m_inputSelectionMethod;
-    bool m_evaluateAtEndOfAnimation;
+    EvaluateMode m_evalMode;
+    InputSelectionMethod m_inputSelectionMethod;
     
     PadToAlignment(iAlignment);    
 } AttribSwitchDef;
@@ -814,52 +902,117 @@ typedef struct(int iAlignment, quad cStart)
     PadToAlignment(iAlignment);    
 } AttribRayCastDef;
 
+typedef struct
+{
+    short m_sourceNodeID;
+    short m_sourcePinIndex;
+} CPConnection <read=ReadCPConnection>;
+
+enum <int> InitDestStartPointMethod
+{
+    INIT_DEST_USE_START_DURATION_FRACTION = 0,                
+    INIT_DEST_USE_EVENT_INDEX_AND_SYNC_ON_EVENT_FRACTION,     
+    INIT_DEST_USE_EVENT_INDEX_AND_USE_EVENT_FRACTION,         
+    INIT_DEST_SYNC_ON_EVENT_INDEX_AND_SYNC_ON_EVENT_FRACTION, 
+    INIT_DEST_SYNC_ON_EVENT_INDEX_AND_USE_EVENT_FRACTION,     
+    INIT_DEST_UNKNOWN = -1,
+};
+
+typedef struct
+{
+    short m_type;
+    short m_targetNodeID;
+    short m_subStateID;
+} StateMachineInitData <read=ReadStateMachineInitData>;
+
+string ReadStateMachineInitData( StateMachineInitData &data )
+{
+    local string c_res;
+
+    SPrintf(c_res, "(%d, %d)", data.m_targetNodeID, data.m_subStateID);
+
+    return c_res;
+}
+
+typedef struct
+{
+    local quad cStart = FTell();
+    
+    pointer m_pNodeInitDataArray <format=hex>;
+    short m_numNodeInitDatas;
+    
+    local quad cBak = FTell();
+    FSeek(cStart + m_pNodeInitDataArray);
+    pointer m_pInitData[m_numNodeInitDatas] <format=hex>;
+    
+    local int i = 0;
+    for (i = 0; i < m_numNodeInitDatas; i++)
+    {
+        FSeek(cStart + m_pInitData[i]);
+        StateMachineInitData m_nodeInitData[m_numNodeInitDatas] <optimize=false>;
+    }
+    FSeek(cBak);
+} NodeInitDataArrayDef;
+
 typedef struct(int iAlignment, quad cStart)
 {
-    float m_durationInTime;
-    int m_destinationMode;
+    float m_duration;
+    InitDestStartPointMethod m_destinationInitMethod;
     float m_destinationStartFraction;
     float m_destinationStartSyncEvent;
-    bool m_slerpTrajectory;
+    bool m_slerpTrajectoryPosition;
     PadToAlignment(4);
-    int m_additiveTranslation : 1;
-    int m_additiveRotation : 2;
+    BlendMode m_blendMode;
     bool m_freezeSource;
     bool m_freezeDest;
-    bool m_isReversibleTransit;
+    bool m_reversible;
     PadToAlignment(4);
     
-    int m_reverseControlParamID;
-    int m_destinationSubStateID;
+    CPConnection m_reverseInputCPConnection;
+    pointer m_pNodeInitData <format=hex>;
     
+    if (m_pNodeInitData)
+    {
+        local quad cBak = FTell();
+        
+        FSeek(cStart + m_pNodeInitData);
+        NodeInitDataArrayDef m_nodeInitDataArrayDef;
+        FSeek(cBak);
+    }
     PadToAlignment(iAlignment);    
 } AttribTransitDef;
 
 typedef struct(int iAlignment, quad cStart)
 {
-    float m_durationInTime;
-    int m_destEventSequenceOffset;
+    float m_duration;
+    int m_destEventTrackOffset;
     int m_destStartEventIndex;
     bool m_usingDestStartEventIndex;
-    bool m_slerpTrajectory;
+    bool m_slerpTrajectoryPosition;
     PadToAlignment(4);
-    PadToAlignment(iAlignment); 
-    int m_additiveTranslation : 1;
-    int m_additiveRotation : 2;
-    bool m_isReversibleTransit;
+    BlendMode m_blendMode; 
+    bool m_reversible;
     PadToAlignment(2);
+    CPConnection m_reverseInputCPConnection;
+    PadToAlignment(16);
+    pointer m_pNodeInitData <format=hex>;
     
-    int m_reverseControlParamID;
-    PadToAlignment(4);
-    int m_destinationSubStateID;
-
+    if (m_pNodeInitData)
+    {
+        local quad cBak = FTell();
+        
+        FSeek(cStart + m_pNodeInitData);
+        NodeInitDataArrayDef m_nodeInitDataArrayDef;
+        FSeek(cBak);
+    }
+    
     PadToAlignment(iAlignment);      
 } AttribTransitSyncEventsDef;
 
 typedef struct(int iAlignment, quad cStart)
 {
-    bool m_bVar0;
-    bool m_bVar1;
+    bool m_useDeadReckoningWhenDeadBlending;
+    bool m_blendToDestinationPhysicsBones;
     
     PadToAlignment(iAlignment);        
 } AttribDeadBlendDef;
@@ -873,23 +1026,38 @@ typedef struct(int iAlignment, quad cStart)
 
 typedef struct(int iAlignment, quad cStart)
 {
-
-    ulong m_pVar1 <format=hex>;
-    ulong m_pVar2 <format=hex>;
-    short m_nodeCountX;
-    short m_nodeCountY;
+    short m_numWeightsX;
+    short m_numWeightsY;
+    bool m_wrapWeightsX;
+    bool m_wrapWeightsY;
+    PadToAlignment(8);
+    pointer m_pWeightsX <format=hex>;
+    pointer m_pWeightsY <format=hex>;
     
-    FSeek(cStart + m_pVar1);
-    float m_weights[2 * m_nodeCountX * m_nodeCountY];
+    FSeek(cStart + m_pWeightsX);
+    float m_weightsX[m_numWeightsX];
+    
+    FSeek(cStart + m_pWeightsY);
+    float m_weightsY[m_numWeightsY];
+
     PadToAlignment(iAlignment);
 } AttribBlendNXMDef;
 
 typedef struct
 {
     int m_messageID;
-    ushort m_destNodeID;
+    ushort m_stateMachineNodeID;
     PadToAlignment(4);
-} EmitRequestMessageData;
+} EmittedMessageMap <read=ReadEmittedMessageMap>;
+
+string ReadEmittedMessageMap(EmittedMessageMap &data)
+{
+    local string str = "";
+    
+    SPrintf(str, "(%d, %d)", data.m_messageID, data.m_stateMachineNodeID);
+   
+    return str;
+}
 
 enum<ubyte> EmitRequestActionType
 {
@@ -899,25 +1067,24 @@ enum<ubyte> EmitRequestActionType
 
 typedef struct(int iAlignment, quad cStart)
 {
-
-    
-    int m_count;
-    ulong m_pMessageDataList <format=hex>;
-    ulong m_pActionTypes <format=hex>;
+    int m_numEmittedMessage;
+    PadToAlignment(8);
+    pointer m_pEmittedMessages <format=hex>;
+    pointer m_pActionTypes <format=hex>;
     PadToAlignment(iAlignment);
-    FSeek(cStart + m_pMessageDataList);
-    EmitRequestMessageData m_messageDataList[m_count] <optimize=false>;
+    FSeek(cStart + m_pEmittedMessages);
+    EmittedMessageMap m_emittedMessages[m_numEmittedMessage] <optimize=false>;
     
     FSeek(cStart + m_pActionTypes);
-    EmitRequestActionType m_actionTypes[m_count];   
+    bool m_messageUsed[m_numEmittedMessage];   
     
     PadToAlignment(iAlignment);        
 } AttribEmittedMessageMap;
 
 typedef struct(int iAlignment, quad cStart)
 {
-    Vector3 m_up;
-    int m_iVar2;
+    Vector3 m_upAxis;
+    int m_numLimbs;
     
     PadToAlignment(iAlignment);    
 } AttribBasicUnevenTerrainSetup;
@@ -925,35 +1092,29 @@ typedef struct(int iAlignment, quad cStart)
 typedef struct
 {
     Vector3 m_kneeRotationAxis;
-    int m_hipIndex;
-    int m_kneeIndex;
-    int m_ankleIndex;
-    int m_ballIndex;
-    int m_toeIndex;
-    int m_unk;
-    
-    PadToAlignment(16);
-} HipsData;
+    int m_channelIDs[5];
+    int m_numFootJoints;
+} ChainData;
 
 typedef struct(int iAlignment, quad cStart)
 {
-    int m_hipsIndex;
-    bool m_bVar2;
-    bool m_bVar3;
-    bool m_bVar4;
+    int m_hipsChannelID;
+    bool m_hipsHeightControlEnable;
+    bool m_hipsPosVelLimitEnable;
+    bool m_hipsPosAccelLimitEnable;
     PadToAlignment(4);
     
-    float m_hipsPosVelocityLimit;
+    float m_hipsPosVelLimit;
     float m_hipsPosAccelLimit;
     float m_straightestLegFactor;
-    bool m_anklePosVelocityLimitEnable;
-    bool m_anklePosAccelLimitEnable;
-    bool m_anklePosAngVelocityLimitEnable;
-    bool m_anklePosAngVccelLimitEnable;
-    float m_anklePosVelocityLimit;
-    float m_anklePosAccelLimit;
-    float m_anklePosAngularVelocityLimit;
-    float m_anklePosAngularAccelLimit;
+    bool m_endJointPosVelLimitEnable;
+    bool m_endJointPosAccelLimitEnable;
+    bool m_endJointAngVelLimitEnable;
+    bool m_endJointAngAccelLimitEnable;
+    float m_endJointPosVelLimit;
+    float m_endJointPosAccelLimit;
+    float m_endJointAngVelLimit;
+    float m_endJointAngAccelLimit;
     
     bool m_useGroundPenetrationFixup;
     bool m_useTrajectorySlopeAlignment;
@@ -961,26 +1122,42 @@ typedef struct(int iAlignment, quad cStart)
     float m_footAlignToSurfaceAngleLimit;
     float m_footAlignToSurfaceMaxSlopeAngle;
     float m_footLiftingHeightLimit;
-    int m_hipsCount;
-    ulong m_pHipsData <format=hex>;
+    int m_numLimbs; Assert(m_numLimbs == 2);
+    PadToAlignment(16);
+
+    pointer m_pChainInfo[2] <format=hex>;
     
-    FSeek(cStart + m_pHipsData);
-    
-    HipsData m_hips[m_hipsCount] <optimize=false>;
+    PadToAlignment(16);
+    local int i = 0;
+    for (i = 0; i < 2; i++)
+    {
+        FSeek(cStart + m_pChainInfo[i]);
+        ChainData m_chainInfo;
+    }
     
     PadToAlignment(iAlignment);    
 } AttribBasicUnevenTerrainChain;
 
+typedef struct
+{
+    int m_eventTrackID;
+} LimbData;
+
 typedef struct(int iAlignment, quad cStart)
 {
-    float m_predictionSlopeAngleLimit;
-    float m_predictionLateralAngleLimit;
-    float m_redictionCloseFootbaseTolFrac;
-    int m_hipsCount;
-    ulong m_pEventTrackIDs <format=hex>;
+    float m_footLiftingSlopeAngleLimit;
+    float m_footLiftingLateralAngleLimit;
+    float m_closeFootbaseTolFrac;
+    int m_numLimbs; Assert(m_numLimbs == 2); //If this is not true then I don't understand how this node works
+    PadToAlignment(8);
+    pointer m_pLimbData[2] <format=hex>;
     
-    FSeek(cStart + m_pEventTrackIDs);
-    uint m_eventTrackIDs[m_hipsCount];
+    local int i = 0;
+    for (i = 0; i < 2; i++)
+    {
+        FSeek(cStart + m_pLimbData[i]);
+        LimbData m_limbData;
+    }
     
     PadToAlignment(iAlignment);    
 } AttribPredictiveUnevenTerrainPredictionDef;
@@ -995,71 +1172,100 @@ typedef struct(int iAlignment, quad cStart)
 
 typedef struct
 {
-    Vector4 m_vVar0;
-    Vector4 m_vVar1;
-    int m_jointIndex;
-    int m_mirrorJointIndex;
-    int m_iVar4;
-    int m_iVar5;
-} MirrorJointData;
+    Vector4 leftUp;
+    Vector4 rightUp;
+    int leftIndex;
+    int rightIndex;
+    PadToAlignment(16);    
 
-typedef struct(int iCount)
-{    
-    int m_iVar0;
-    int m_iVar1;
-    int m_pOffset[iCount];
-} UnkMirrorJointData;
+    //int leftUnk;
+    //int rightUnk;
+} AdvancedMapping <read=ReadAdvancedMapping>;
+
+string ReadAdvancedMapping(AdvancedMapping &data)
+{
+    string str = "";
+    
+    SPrintf(str, "(left=%d, right=%d)", data.leftIndex, data.rightIndex);
+    
+    return str;
+}
+
+typedef struct
+{
+    int m_left;
+    int m_right;    
+} SimpleMapping <read=ReadSimpleMapping>;
+
+string ReadSimpleMapping(SimpleMapping &data)
+{
+    local string str = "";
+    
+    SPrintf(str, "(first=%d, second=%d)", data.m_left, data.m_right);
+    
+    return str;
+}
 
 typedef struct(int iAlignment, quad cStart)
 {
-    int m_iVar0;
-    int m_mirrorJointCount;
-    int m_iVar2;
-    int m_iVar3;
-    ulong m_pEnd <format=hex>;
-    int m_iVar5;
-    ulong m_pStart <format=hex>;
-    int m_count;
-    ulong m_pBindPose <format=hex>;
-    ulong m_pVar9 <format=hex>;
+    int m_axis;
+    int m_numBoneMappings;
+    pointer m_pBoneMappings <format=hex>;
+    int m_numTrackIds;
+    PadToAlignment(8);
+    pointer m_pTrackIds <format=hex>;
+    int m_numEventIds;
+    PadToAlignment(8);    
+    pointer m_pEventIds <format=hex>;
+    int m_numUnmappedBones;
+    PadToAlignment(8);    
+    pointer m_pUnmappedQuatOffsets <format=hex>;
+    pointer m_pUnmappedBoneIDs <format=hex>;
     
-    MirrorJointData m_mirrorJoints[m_mirrorJointCount];
+    FSeek(cStart + m_pBoneMappings);
+    AdvancedMapping m_boneMappings[m_numBoneMappings] <optimize=false>;
     
-    FSeek(cStart + m_pBindPose);
-    Vector4 m_mirrorBindPose[m_count];
+    FSeek(cStart + m_pUnmappedQuatOffsets);
+    Vector4 m_unmappedQuatOffsets[m_numUnmappedBones] <optimize=false>;
     
-    FSeek(cStart + m_pVar9);
-    int m_indices[m_count];
+    FSeek(cStart + m_pUnmappedBoneIDs);
+    int m_unmappedBoneIDs[m_numUnmappedBones] <optimize=false>;
     
-    local int iCount = (m_pEnd - m_pStart) / 4;
+    if (m_numEventIds > 0)
+    {    
+        FSeek(cStart + m_pEventIds);
+        SimpleMapping m_eventIds[m_numEventIds];
+    }
     
-    FSeek(cStart + m_pStart);
-    int m_unk[iCount];
-    
-    FSeek(cStart + m_pStart);
+    if (m_numTrackIds > 0)
+    {
+        FSeek(cStart + m_pTrackIds);
+        SimpleMapping m_trackIds[m_numTrackIds];
+    }
     
     PadToAlignment(iAlignment);
 } AttribAnimMirroredMapping;
 
 typedef struct(int iAlignment, quad cStart)
 {
-    ulong m_bundleID <format=hex>;
+    pointer m_bundleID <format=hex>;
     
     PadToAlignment(iAlignment);
 } AttribCharacterControllerDef;
 
 typedef struct(int iAlignment, quad cStart)
 {
-    short m_maxIndex;
-    short m_count;
-    ulong m_pData <format=hex>;
+    short m_trajectoryBoneIndex;
+    short m_numChannelAlphas;
+    PadToAlignment(8);
+    pointer m_pChannelAlphas <format=hex>;
     
-    if (m_count > 0)
+    if (m_numChannelAlphas > 0)
     {    
-        FSeek(cStart + m_pData);
-        float m_values[56];
+        FSeek(cStart + m_pChannelAlphas);
+        float m_channelAlphas[m_numChannelAlphas + 1];
     }
-    
+        
     PadToAlignment(iAlignment);    
     
 } AttribFeatherBlend2ChannelAlphas;
@@ -1070,6 +1276,86 @@ typedef struct(int iAlignment, quad cStart)
     
     PadToAlignment(iAlignment);    
 } AttribBlendFlags;
+
+
+enum<int> ElementType
+{
+    NMP_ELEMENT_TYPE_INT = 0,
+    NMP_ELEMENT_TYPE_FLOAT,
+    NMP_ELEMENT_TYPE_VEC3,
+    NMP_ELEMENT_TYPE_POSVEL,
+    NMP_ELEMENT_TYPE_ANGVEL,
+    NMP_ELEMENT_TYPE_VEC4,
+    NMP_ELEMENT_TYPE_QUAT,
+    NMP_ELEMENT_TYPE_QUAT_COMP,
+    NMP_ELEMENT_TYPE_POS_COMP,
+    NMP_ELEMENT_TYPE_MATRIX,
+    NMP_ELEMENT_TYPE_MAX,
+    NMP_ELEMENT_TYPE_USER = 0xFFFF0000
+};
+
+typedef struct
+{
+    ElementType m_type;
+    int m_size;
+    int m_alignment;
+} ElementDescriptor <read=ReadElementDescriptor>;
+
+string ReadElementDescriptor(ElementDescriptor &data)
+{
+    local string str = "";
+    SPrintf(str, "(%s, %d, %d)", EnumToString(data.m_type), data.m_size, data.m_alignment);
+    
+    return str;
+}
+
+typedef struct(int iAlignment, quad cStart)
+{   
+    pointer m_pTransformBuffer <format=hex>;
+    
+    FSeek(cStart + m_pTransformBuffer);
+    local quad pStart = FTell();
+    
+    Format m_memReqs;
+    int m_length;
+    bool m_full;
+    PadToAlignment(4);
+    int m_numElements;
+    PadToAlignment(8);
+    pointer m_pElementDescriptors <format=hex>;
+    pointer m_ppData <format=hex>;
+    pointer m_pUsedFlags <format=hex>;
+    
+    FSeek(pStart + m_pElementDescriptors);
+    ElementDescriptor m_elementDescriptors[m_numElements];
+    
+    FSeek(pStart + m_ppData);
+    pointer m_pData[m_numElements] <format=hex>;
+    
+    local int i = 0;
+    for (i = 0; i < m_numElements; i++)
+    { 
+        FSeek(pStart + m_pData[i]);
+        CreateElementDataEntry(m_elementDescriptors[i].m_type, m_length);
+    }
+    
+    FSeek(pStart + m_pUsedFlags);    
+    UsedFlags m_usedFlags;    
+} AttribTransformsDataBuffer;
+
+typedef struct(int iAlignment, quad cStart)
+{     
+    int m_rigSize;
+    int m_numJointLimits;
+    pointer m_ppJointLimits <format=hex>;
+    pointer m_pJointLimitsData <format=hex>;
+    
+    FSeek(cStart + m_ppJointLimits);
+    pointer m_pJointLimits[m_rigSize] <format=hex>;
+
+    FSeek(cStart + m_pJointLimitsData);
+    JointLimitsParam m_jointLimits[m_numJointLimits] <optimize=false>;
+} AttribJointLimits;
 
 void CreateAttribTypeData(AttribType m_attribType, quad pDataStart, int iDataSize, int iAlignment)
 {
@@ -1109,6 +1395,9 @@ void CreateAttribTypeData(AttribType m_attribType, quad pDataStart, int iDataSiz
 	case ATTRIB_TYPE_PLAYBACK_POS:
 		AttribPlaybackPos m_data(iAlignment, pDataStart);
 		break;
+    case ATTRIB_TYPE_TRANSFORM_BUFFER:
+        AttribTransformsDataBuffer m_data(iAlignment, pDataStart);
+		break;
 	case ATTRIB_TYPE_TRAJECTORY_DELTA_TRANSFORM:
 		AttribTrajectoryDeltaTransform m_data(iAlignment, pDataStart);
 		break;
@@ -1116,7 +1405,7 @@ void CreateAttribTypeData(AttribType m_attribType, quad pDataStart, int iDataSiz
 		AttribRig m_data(iAlignment, pDataStart);
 		break;
 	case ATTRIB_TYPE_CLOSEST_ANIM_DEF:
-		if ( iDataSize > 9 )
+		if ( iDataSize > 8 )
 			ubyte m_data[iDataSize - 8];
 		break;
 	case ATTRIB_TYPE_CLOSEST_ANIM_DEF_ANIM_SET:
@@ -1230,5 +1519,8 @@ void CreateAttribTypeData(AttribType m_attribType, quad pDataStart, int iDataSiz
     case ATTRIB_TYPE_BLEND_FLAGS:
         AttribBlendFlags m_data(iAlignment, pDataStart);
 		break;
+    case ATTRIB_TYPE_JOINT_LIMITS:
+        AttribJointLimits m_data(iAlignment, pDataStart);
+        break;
 	}    
 }

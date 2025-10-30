@@ -1,10 +1,10 @@
-enum NodeType
+enum<int> NodeType
 {
     NodeType_NetworkInstance = 9,
     NodeType_StateMachine = 10,
     NodeType_ControlParameterFloat = 20,
     NodeType_ControlParameterVector3 = 21,
-    NodeType_ControLParameterVector4 = 22,
+    NodeType_ControlParameterVector4 = 22,
     NodeType_ControlParameterBool = 23,
     NodeType_ControlParameterInt = 24,
     NodeType_ControlParameterUInt = 25,
@@ -14,8 +14,8 @@ enum NodeType
     NodeType_BlendN = 108,
     NodeType_SingleFrame = 109,
     NodeType_OperatorFunction = 110,
-    NodeType_OperatorFloatArithmetic = 111,
-    NodeType_OperatorReRange = 112,
+    NodeType_OperatorArithmetic = 111,
+    NodeType_OperatorOneInputArithmetic = 112,
     NodeType_NoiseGen = 113,
     NodeType_FeatherBlend = 114,
     NodeType_ApplyBindPose = 115,
@@ -57,7 +57,8 @@ enum NodeType
     NodeType_OperatorVector3CrossProduct = 172,
     NodeType_RateOfChange = 173,
     NodeType_OperatorVector3Angle = 174,
-    NodeType_OperatorVector3Normalize = 175,
+    NodeType_OperatorVector3Normalise = 175,
+	NodeType_OperatorVector3OneInputArithmetic = 185,
     NodeType_TransitSyncEvents = 400,
     NodeType_Transit = 402,
     NodeType_SmoothTransforms = 500,

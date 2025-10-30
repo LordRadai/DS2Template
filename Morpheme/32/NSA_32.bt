@@ -1,38 +1,40 @@
 //------------------------------------------------
 //--- 010 Editor v9.0.2 Binary Template
 //
-//      File: 
+//      File: NSA.bt
 //   Authors: Radai
 //   Version: 
-//   Purpose: 
-//  Category: 
+//   Purpose: Compressed animation format
+//  Category: Dark Souls II 64-bit Morpheme Binary
 // File Mask: *.nsa
 //  ID Bytes: 
 //   History: 
 //------------------------------------------------
 LittleEndian();
 
-typedef struct (int count)
-{
-    SetForeColor(cBlack);
+#include "Core.bt"
 
-    ubyte m_pad[count];
-} Padding;
+enum <byte> AnimType
+{
+    ANIM_TYPE_MBA,
+    ANIM_TYPE_ASA,
+    ANIM_TYPE_NSA,
+    ANIM_TYPE_QSA
+};
 
 typedef struct
 {
-    float m_i;
-    float m_j;
-    float m_k;
-    float m_w;
-} Quaternion <read=ReadQuaternion>;
+    int64 m_size;
+    int64 m_alignment;
+} Format <read=ReadFormat>;
 
-string ReadQuaternion ( Quaternion &quat )
+string ReadFormat(Format& data)
 {
-    string c_res;
-
-    SPrintf(c_res, "(%.3f, %.3f, %.3f, %.3f)\n", quat.m_i, quat.m_j, quat.m_k, quat.m_w);
-    return c_res;
+    local string str = "";
+    
+    SPrintf(str, "(%d, %d)", data.m_size, data.m_alignment);
+    
+    return str;
 }
 
 typedef struct
@@ -40,9 +42,9 @@ typedef struct
     SetForeColor(cAqua);
     float m_min[3];
     float m_scaledExtent[3];
-} DequantizationFactors <read=ReadDequantizationFactor>;
+} QuantisationScaleAndOffsetVec3 <read=ReadQuantisationScaleAndOffsetVec3>;
 
-string ReadDequantizationFactor(DequantizationFactors &deqFactor)
+string ReadQuantisationScaleAndOffsetVec3(QuantisationScaleAndOffsetVec3 &deqFactor)
 {
     string ret;
 
@@ -67,92 +69,60 @@ string ReadVec3Short( Vec3Short &vec )
     return ret;
 }
 
-typedef struct  
-{
-    SetForeColor(cGray);
-
-    int m_hash <format=hex>;
-    int m_pNsaDynamicSegment <format=hex>;
-    int m_alignment;
-    int unk18;
-    int unk1C;
-    int unk20;
-    float m_duration;
-    float m_fps;
-    int m_boneCount;
-    int m_pSampleCountCount;
-    int m_dynamicSegmentCount;
-    int m_animBoneCount;
-    int m_pStaticTranslationBoneIndices <format=hex>;
-    int m_pStaticRotationBoneIndices <format=hex>;
-    int m_ppDynamicTranslationBoneIndices <format=hex>;
-    int m_ppDynamicRotationBoneIndices <format=hex>;
-    DequantizationFactors m_translationStartPosFactors;
-    int m_translationAnimDequantizationCount;
-    int m_rotationAnimDequantizationCount;
-    int m_pTranslationDequantizationFactors <format=hex>;
-    int m_pRotationDequantizationFactors <format=hex>;
-    int m_pNsaStaticSegment <format=hex>;
-    int m_secondSegmentSize <format=hex>;
-    int m_pSampleCount <format=hex>;
-    int m_pDynamicSegmentSize <format=hex>;
-    int m_ppNsaDynamicSegment <format=hex>;
-    int m_pNsaRootMotionSegment <format=hex>;
-    Padding m_pad(8);
-} Header;
-
 typedef struct
 {
-    short count <fgcolor=cGreen>;
-    short id[count] <fgcolor=cLtGreen>;
-} IndexList <read=ReadIndexList>;
+    SetForeColor(cGreen);
+    short m_numChannels;
+    short m_animChannels[m_numChannels];
+} CompToAnimChannelMap <read=ReadCompToAnimChannelMap>;
 
-string ReadIndexList( IndexList &p )
+string ReadCompToAnimChannelMap( CompToAnimChannelMap &p )
 {
     string ret;
 
-    SPrintf(ret, "%d\n", p.count);
+    SPrintf(ret, "%d\n", p.m_numChannels);
 
     return ret;
 }
 
 typedef struct
 {
+    SetForeColor(cLtRed);
+
     local quad startPos = FTell();
 
-    SetForeColor(cLtRed);
-    int m_translationBoneCount;
-    int m_rotationBoneCount;
-    DequantizationFactors m_translationBoneDequantizationFactors;
-    DequantizationFactors m_rotationBoneDequantizationFactors;
-    int m_pTranslationData <format=hex>;
-    int m_pRotationData <format=hex>;
+    int m_unchangingPosNumChannels;
+    int m_unchangingQuatNumChannels;
+    QuantisationScaleAndOffsetVec3 m_unchangingPosQuantisationInfo;
+    QuantisationScaleAndOffsetVec3 m_unchangingQuatQuantisationInfo;
+    quad m_pUnchangingPosData <format=hex>;
+    quad m_pUnchangingQuatData <format=hex>;
     
-    if  ( m_translationBoneCount > 0 && m_pTranslationData != 0 )
+    if  ( m_unchangingPosNumChannels > 0 && m_pUnchangingPosData != 0 )
     {   
         
-        FSeek(startPos + m_pTranslationData);
-        Vec3Short m_translationData[m_translationBoneCount];
+        FSeek(startPos + m_pUnchangingPosData);
+        Vec3Short m_unchangingPosData[m_unchangingPosNumChannels];
     }
 
-    if  ( m_rotationBoneCount > 0 && m_pRotationData != 0 )
-        FSeek(startPos + m_pRotationData);
-        Vec3Short m_rotationData[m_rotationBoneCount];
+    if  ( m_unchangingQuatNumChannels > 0 && m_pUnchangingQuatData != 0 )
+        FSeek(startPos + m_pUnchangingQuatData);
+        Vec3Short m_unchangingQuatData[m_unchangingQuatNumChannels];
 
-    local int padAmount = CalculatePadAlignmentCount(16);
-    if ( padAmount != 0 )
-        Padding m_pad(padAmount);
+    PadToAlignment(16);
 
-} NsaStaticSegment;
+} UnchangingDataNSA;
 
 typedef struct
 {
+    SetForeColor(cPurple);
+
     int m_x : 11;
     int m_y : 11;
     int m_z : 10;
-} TranslationSampleData <read=ReadTranslationSampleData>;
+} SampledPosKey <read=ReadSampledPosKey>;
 
-string ReadTranslationSampleData( TranslationSampleData &sampleData )
+string ReadSampledPosKey( SampledPosKey &sampleData )
 {
     string ret;
 
@@ -161,28 +131,21 @@ string ReadTranslationSampleData( TranslationSampleData &sampleData )
     return ret;
 }
 
-typedef struct 
-{
-    SetForeColor(cRed);
-
-    int m_offset <format=hex>;
-} Offset <read=ReadOffset>;
-
-string ReadOffset( Offset &p )
-{
-    string ret;
-
-    SPrintf(ret, "%Xh\n", p.m_offset);
-
-    return ret;
-}
-
 typedef struct
-{
-    SetForeColor(cPurple);
+{    
+    SetForeColor(cLtPurple);
+    
+    short m_data[3];
+} SampledQuatKeyTQA <read=ReadSampledQuatKeyTQA>;
 
-    Vec3Short m_data;
-} RotationSampleData <read=ReadVec3Short(m_data)>;
+string ReadSampledQuatKeyTQA(SampledQuatKeyTQA &data)
+{
+    local string str = "";
+    
+    SPrintf(str, "(%d, %d, %d)", data.m_data[0], data.m_data[1], data.m_data[2]);
+    
+    return str;
+}
 
 int GetDeqInfoCount(int bone_count) 
 {
@@ -196,13 +159,12 @@ int GetDeqInfoCount(int bone_count)
 
 typedef struct
 {
-    SetForeColor(cLtRed);
-
+    SetForeColor(cBlack);
     byte m_init[3];
     byte m_factor_idx[3];
-} DequantizationInfo <read=ReadDequantizationInfo>;
+} QuantisationMeanAndSetVec3 <read=ReadQuantisationMeanAndSetVec3>;
 
-string ReadDequantizationInfo(DequantizationInfo &deqInfo)
+string ReadQuantisationMeanAndSetVec3(QuantisationMeanAndSetVec3 &deqInfo)
 {
     string ret;
 
@@ -211,201 +173,244 @@ string ReadDequantizationInfo(DequantizationInfo &deqInfo)
     return ret;
 }
 
-int CalculatePadAlignmentCount(int alignment)
-{
-    local quad pos = FTell();
-    local int remainder = pos % alignment;
-
-    if (remainder != 0)
-        return alignment - remainder;
-
-    return 0;
-}
-
 typedef struct
 {
-    local quad startPos = FTell();
-    SetForeColor(cLtGreen);
+    local quad pStart = FTell();
+    SetForeColor(cBlue);
 
-    int m_sampleCount;
-    int m_translationBoneCount;
-    int m_rotationBoneCount;
-    int m_pTranslationSampleData <format=hex>;
-    int m_pTranslationDeqInfo <format=hex>;
-    int m_pRotationSampleData <format=hex>;
-    int m_pRotationDeqInfo <format=hex>;
+    int m_numSectionAnimFrames;
+    int m_sampledPosNumChannels;
+    int m_sampledQuatNumChannels;
+    PadToAlignment(8);
+    quad m_pSampledPosData <format=hex>;
+    quad m_pSampledPosQuantisationData <format=hex>;
+    quad m_pSampledQuatData <format=hex>;
+    quad m_pSampledQuatQuantisationData <format=hex>;
     
-    if ( m_pTranslationSampleData != 0 )
+    if ( m_pSampledPosData != 0 )
     {
-        FSeek(startPos + m_pTranslationSampleData);
-        TranslationSampleData m_translationData[m_sampleCount * m_translationBoneCount];    
+        FSeek(pStart + m_pSampledPosData);
+        SampledPosKey m_sampledPosData[m_numSectionAnimFrames * m_sampledPosNumChannels];    
     }
 
-    if ( m_pTranslationDeqInfo != 0 )
+    if ( m_pSampledPosQuantisationData != 0 )
     {
-        FSeek(startPos + m_pTranslationDeqInfo);
-        DequantizationInfo m_translationDeqInfo[GetDeqInfoCount(m_translationBoneCount)];
+        FSeek(pStart + m_pSampledPosQuantisationData);
+        QuantisationMeanAndSetVec3 m_sampledPosQuantisationData[GetDeqInfoCount(m_sampledPosNumChannels)];
     }
 
-    if ( m_pRotationSampleData != 0 )
+    if ( m_pSampledQuatData != 0 )
     {
-        FSeek(startPos + m_pRotationSampleData);
-        RotationSampleData m_rotationData[m_sampleCount * m_rotationBoneCount];
-
-        local quad RotationDataEnd = FTell();
-        
-        if ( ((startPos + m_pRotationDeqInfo) - RotationDataEnd) != 0) //I don't know what this is, but it's not always present
-            short m_unkData[m_sampleCount];
+        FSeek(pStart + m_pSampledQuatData);
+        SampledQuatKeyTQA m_sampledQuatData[m_numSectionAnimFrames * m_sampledQuatNumChannels];
     }
 
-    if ( m_pRotationDeqInfo != 0 )
+    if ( m_pSampledQuatQuantisationData != 0 )
     {
-        FSeek(startPos + m_pRotationDeqInfo);
-        DequantizationInfo m_rotationDeqInfo[GetDeqInfoCount(m_rotationBoneCount)];
+        FSeek(pStart + m_pSampledQuatQuantisationData);
+        QuantisationMeanAndSetVec3 m_sampledQuatQuantisationData[GetDeqInfoCount(m_sampledQuatNumChannels)];
     }
 
-    local int padAmount = CalculatePadAlignmentCount(16);
-    if ( padAmount != 0 )
-        Padding m_pad(padAmount);
+    PadToAlignment(16);
 
-} NsaDynamicSegment;
+} AnimSectionNSA;
+
+enum<int> TrajType
+{
+    TRAJ_TYPE_UNDEFINED = -1,
+    TRAJ_TYPE_MBA = 0,
+    TRAJ_TYPE_ASA = 1,
+    TRAJ_TYPE_NSA = 2,
+    TRAJ_TYPE_QSA = 3
+};
 
 typedef struct
 {
-    SetForeColor(cGray);
+    SetForeColor(cRed);
 
-    int m_version;
-    int m_iVar1;
-    int m_size <format=hex>;
-    int m_alignment;
-    float m_framerate;
-    int m_sampleCount;
-    DequantizationFactors m_translationFactors;
-    Quaternion m_rotation;
-    Padding m_pad(8);
-    int m_pRootMotionTranslationData <format=hex>;
-    int m_pRootMotionRotationData <format=hex>;    
+    TrajType m_trajType;
+    PadToAlignment(8);
+    pointer m_pGetTrajAtTime <format=hex>;
+    Format m_trajectoryInstanceMemReqs;
+    float m_sampleFrequency;
+    int m_numAnimFrames;
+    QuantisationScaleAndOffsetVec3 m_sampledDeltaQuatKeysInfo;
+    QuantisationScaleAndOffsetVec3 m_sampledDeltaQuatKeysInfo;
+    quad m_pSampledDeltaPosKeys <format=hex>;
+    quad m_pSampledDeltaQuatKeys <format=hex>;    
 
-    if ( m_pRootMotionTranslationData )
-        TranslationSampleData m_translationSampleData[m_sampleCount];
+    if ( m_pSampledDeltaPosKeys )
+        SampledPosKey m_translationSampleData[m_numAnimFrames];
 
-    if ( m_pRootMotionRotationData )
-        RotationSampleData m_rotationSampleData[m_sampleCount];
+    if ( m_pSampledDeltaQuatKeys )
+        SampledQuatKeyTQA m_rotationSampleData[m_numAnimFrames];
+} TrajectorySourceNSA;
 
-    local int padAmount = CalculatePadAlignmentCount(16);
-    if ( padAmount != 0 )
-        Padding m_pad1(padAmount);
+SetForeColor(cGray);
 
-} NsaRootMotionSegment;
+local quad pBak = FTell();
 
-Header m_header;
+pointer m_pFunctionTable;
+Format m_animInstanceMemoryRequirements;
+AnimType m_animType;
+bool m_isLocated;
+Skip(6);
+pointer m_pVar0 <format=hex>;
+float m_duration;
+float m_sampleFrequency;
+int m_numChannelSets;
+int m_numFrameSections;
+int m_numChannelSections;
+int m_maxNumCompChannels;
+quad m_pUnchangingPosCompToAnimMap <format=hex>;
 
-if ( m_header.m_pStaticTranslationBoneIndices != 0 ) 
+if ( m_pUnchangingPosCompToAnimMap != 0 ) 
 {
-    FSeek(m_header.m_pStaticTranslationBoneIndices);
-    IndexList m_staticTranslationBoneIndices;
+    pBak = FTell();
+    
+    FSeek(m_pUnchangingPosCompToAnimMap);
+    CompToAnimChannelMap m_unchangingPosCompToAnimMap;
+    FSeek(pBak);
 }
 
-if ( m_header.m_pStaticRotationBoneIndices != 0 ) 
-{
-    FSeek(m_header.m_pStaticRotationBoneIndices);
-    IndexList m_staticRotationBoneIndices;
+quad m_pUnchangingQuatCompToAnimMap <format=hex>;
 
+if ( m_pUnchangingQuatCompToAnimMap != 0 ) 
+{
+    pBak = FTell();
+    
+    FSeek(m_pUnchangingQuatCompToAnimMap);
+    CompToAnimChannelMap m_unchangingQuatCompToAnimMap;
+    FSeek(pBak);    
 }
 
-if ( m_header.m_ppDynamicTranslationBoneIndices != 0 ) 
+quad m_ppSampledPosCompToAnimMaps <format=hex>;
+
+if ( m_ppSampledPosCompToAnimMaps != 0 ) 
 {
-    FSeek(m_header.m_ppDynamicTranslationBoneIndices);
-    Offset m_pDynamicTranslationBoneIndices;
-    FSeek(m_pDynamicTranslationBoneIndices.m_offset);
-    IndexList m_dynamicTranslationBoneIndices;
+    pBak = FTell();
+
+    FSeek(m_ppSampledPosCompToAnimMaps);
+    pointer m_pSampledPosCompToAnimMaps <format=hex>;
+    FSeek(m_pSampledPosCompToAnimMaps);
+    CompToAnimChannelMap m_sampledPosCompToAnimMaps;
+    
+    FSeek(pBak);    
 }
 
-if ( m_header.m_ppDynamicRotationBoneIndices != 0 ) 
+quad m_ppSampledQuatCompToAnimMaps <format=hex>;
+
+if ( m_ppSampledQuatCompToAnimMaps != 0 ) 
 {
-    FSeek(m_header.m_ppDynamicRotationBoneIndices);
-    Offset m_pDynamicRotationBoneIndices;
-    FSeek(m_pDynamicRotationBoneIndices.m_offset);
-    IndexList m_dynamicRotationBoneIndices;
+    pBak = FTell();
+    
+    FSeek(m_ppSampledQuatCompToAnimMaps);
+    pointer m_pSampledQuatCompToAnimMaps <format=hex>;
+    FSeek(m_pSampledQuatCompToAnimMaps);
+    CompToAnimChannelMap m_sampledQuatCompToAnimMaps;
+    
+    FSeek(pBak);        
 }
 
-if ( m_header.m_pTranslationDequantizationFactors != 0 ) 
+QuantisationScaleAndOffsetVec3 m_posMeansQuantisationInfo;
+int m_sampledPosNumQuantisationSets;
+int m_sampledQuatNumQuantisationSets;
+quad m_pSampledPosQuantisationInfo <format=hex>;
+
+if ( m_pSampledPosQuantisationInfo != 0 ) 
 {
-    FSeek(m_header.m_pTranslationDequantizationFactors);
-    DequantizationFactors m_translationAnimDequantizationFactors[m_header.m_translationAnimDequantizationCount];
+    pBak = FTell();
+    
+    FSeek(m_pSampledPosQuantisationInfo);
+    QuantisationScaleAndOffsetVec3 m_translationAnimQuantisationScaleAndOffsetVec3[m_sampledPosNumQuantisationSets];
+    
+    FSeek(pBak);
 }
 
-if ( m_header.m_pRotationDequantizationFactors != 0 )
+quad m_pSampledQuatQuantisationInfo <format=hex>;
+
+if ( m_pSampledQuatQuantisationInfo != 0 )
 {
-    FSeek(m_header.m_pRotationDequantizationFactors);
-    DequantizationFactors m_rotationDequantizationFactors[m_header.m_rotationAnimDequantizationCount];
+    pBak = FTell();
+    
+    FSeek(m_pSampledQuatQuantisationInfo);
+    QuantisationScaleAndOffsetVec3 m_rotationQuantisationScaleAndOffsetVec3[m_sampledQuatNumQuantisationSets];
+    
+    FSeek(pBak);
 }
 
-typedef struct
-{
-    int m_iVar0;
-    int m_sampleCountMinusOne;
-} NsaA0 <read=ReadNsaA0>;
+quad m_pUnchangingData <format=hex>;
 
-string ReadNsaA0( NsaA0 &p )
-{
-    string ret;
-
-    SPrintf(ret, "%d\n", p.m_sampleCountMinusOne);
-
-    return ret;
+if ( m_pUnchangingData != 0 ) ù
+{    
+    pBak = FTell();
+ 
+    FSeek(m_pUnchangingData);
+    UnchangingDataNSA m_unchangingData;
+    
+    FSeek(pBak);
 }
 
-if ( m_header.m_pSampleCount != 0 ) 
+int m_maxSectionSize;
+PadToAlignment(8);
+
+quad m_pSectionStartFrames <format=hex>;
+
+if ( m_pSectionStartFrames != 0 ) 
 {
+    pBak = FTell();
+    
     SetForeColor(cLtBlue);
-    FSeek(m_header.m_pSampleCount);
+    FSeek(m_pSectionStartFrames);
 
-    NsaA0 m_nsaA0;
-}
-
-typedef struct
-{
-    int m_dynamicSegmentSize <format=hex>;
-} DynamicSegmentSize <read=ReadDynamicSegmentSize>;
-
-string ReadDynamicSegmentSize( DynamicSegmentSize &p )
-{
-    string ret;
-
-    SPrintf(ret, "%Xh\n", p.m_dynamicSegmentSize);
-
-    return ret;
-}
-
-if ( m_header.m_pDynamicSegmentSize != 0 )
-{
-    FSeek(m_header.m_pDynamicSegmentSize);
-
-    DynamicSegmentSize m_dynamicSegmentSize;
-}
-
-if ( m_header.m_ppNsaDynamicSegment != 0 ) 
-{
-    FSeek(m_header.m_ppNsaDynamicSegment);
-    Offset m_pNsaDynamicSegment;
-    FSeek(m_pNsaDynamicSegment.m_offset);
-}
-
-if ( m_header.m_pNsaStaticSegment != 0 ) {
+    int m_sectionStartFrames[m_numFrameSections];
     
-    FSeek(m_header.m_pNsaStaticSegment);
-    NsaStaticSegment m_nsaStaticSegment;
+    FSeek(pBak);
 }
 
-if ( m_header.m_pNsaDynamicSegment != 0 ) 
+quad m_pSectionSizes <format=hex>;
+
+if ( m_pSectionSizes != 0 )
 {
-    FSeek(m_header.m_pNsaDynamicSegment);
-    NsaDynamicSegment m_nsaDynamicSegment;
+    pBak = FTell();
+    
+    FSeek(m_pSectionSizes);
+    
+    int m_sectionSizes[m_numFrameSections];
+    
+    FSeek(pBak);
 }
 
-if ( m_header.m_pNsaRootMotionSegment != 0 ) 
+quad m_ppSectionData <format=hex>;
+
+if ( m_ppSectionData != 0 ) 
 {
-    FSeek(m_header.m_pNsaRootMotionSegment);
-    NsaRootMotionSegment m_nsaRootMotionSegment;
+    pBak = FTell();
+    
+    FSeek(m_ppSectionData);
+    pointer m_pSectionData[m_numFrameSections] <format=hex>;
+    
+    local int i = 0;
+    for (i = 0; i < m_numFrameSections; i++)
+    {
+        if ( m_pSectionData[i] != 0 ) 
+        {
+            FSeek(m_pSectionData[i]);
+            AnimSectionNSA m_animSectionNSA;
+        }
+    }
+    
+    FSeek(pBak);
+}
+
+quad m_pTrajectoryData <format=hex>;
+
+if ( m_pTrajectoryData != 0 ) 
+{
+    pBak = FTell();
+    
+    FSeek(m_pTrajectoryData);
+    TrajectorySourceNSA m_trajectoryData;
+    
+    FSeek(pBak);
 }
