@@ -112,9 +112,9 @@ typedef struct
     
     FSeek(pStart + m_pBindPose);        
     AttribData m_bindPose;
-} Rig <read=ReadRig>;
+} AnimRigDef <read=ReadRig>;
 
-string ReadRig( Rig &data )
+string ReadRig( AnimRigDef &data )
 {
     return ReadIDMappedStringTable(data.m_boneNameMap);
 }
@@ -906,7 +906,7 @@ typedef struct
         ubyte m_data[m_dataSize];  
         break;
     case kAsset_Rig:
-        Rig m_rig;
+        AnimRigDef m_rig;
         break;
     case kAsset_RigToAnimMap:
         RigToAnimMap m_rigToAnimMap;
