@@ -23,9 +23,9 @@ typedef struct
     pointer m_allocator <format=hex>;
     short m_refCount;    
 	AttribType m_attribType;
-	PadToAlignment(8);
+	PadToAlignment(4);
 
-	CreateAttribTypeData(m_attribType, pStart, 0, 16);
+	CreateAttribTypeData(m_attribType, pStart, 0, 4);
 } AttribData;
 
 typedef struct
@@ -283,7 +283,7 @@ typedef struct
         for(index = 0; index < m_numSemantics; index++)
             SemanticLookupElement m_semanticLookup(index);
             
-        FSeek(c_pBak + 0x8);
+        FSeek(c_pBak + 4);
     }
     
 } SemanticLookupTable <read=ReadSemanticLookupTable>;
@@ -310,7 +310,7 @@ typedef struct ( quad c_pSectionStart )
     
     local string c_res = ReadSemanticLookupTable(m_semanticLookupTable);
 
-    FSeek(c_pStart + 0x8); 
+    FSeek(c_pStart + 4); 
 } SemanticLookupTablePtr <read=c_res>;
         
 typedef struct ( quad c_pStart )
@@ -319,8 +319,8 @@ typedef struct ( quad c_pStart )
 
     local quad c_pLocalStart = FTell();
     local quad c_dataPtr = ReadQuad(c_pLocalStart);
-    local quad c_dataSize = ReadQuad(c_pLocalStart + 0x8);
-    local quad c_dataAlignment = ReadInt(c_pLocalStart + 0x10);
+    local quad c_dataSize = ReadQuad(c_pLocalStart + 4);
+    local quad c_dataAlignment = ReadInt(c_pLocalStart + 8);
 
     local quad c_pLocalDataStart = FTell();
     pointer m_pAttribData <format=hex>;
@@ -330,7 +330,7 @@ typedef struct ( quad c_pStart )
         FSeek(c_pStart + m_pAttribData);
         local quad cDataStart = FTell();                        
         AttribData m_data;
-        FSeek(c_pLocalStart + 0x8);
+        FSeek(c_pLocalStart + 4);
     }
 
     Format m_format;
@@ -396,7 +396,6 @@ typedef struct
     byte m_numOutputCPPins;
     short m_numAttribDataHandles;
     short m_passThroughChildIndex;
-    Skip(4);
 
     pointer m_pOwningNetworkDef <format=hex>;
     
@@ -409,7 +408,7 @@ typedef struct
     {
         FSeek(c_pStart + m_pChildNodeIDs);   
         short m_childNodeIDs[m_numChildNodeIDs]; 
-        FSeek(c_pBak + 0x8);
+        FSeek(c_pBak + 4);
     }
     
     c_pBak = FTell();
@@ -419,7 +418,7 @@ typedef struct
     {
         FSeek(c_pStart + m_pInputCPConnections);     
         CPConnection m_inputCPConnections[m_numInputCPConnections]; 
-        FSeek(c_pBak + 0x8);
+        FSeek(c_pBak + 4);
     }
     
     c_pBak = FTell();
@@ -429,12 +428,11 @@ typedef struct
     {
         FSeek(c_pStart + m_pNodeAttribDataHandles);     
         AttribDataHandle m_nodeAttribDataHandles(c_pStart)[m_numAttribDataHandles] <optimize=false>;
-        FSeek(c_pBak + 0x8);
+        FSeek(c_pBak + 4);
     }
 
     short m_taskQueuingFnsID;
     short m_outputCPTasksID;
-    Skip(4);   
     pointer m_taskQueuingFns;
     pointer m_outputCPTasks;
     pointer m_deleteNodeInstanceFn;
@@ -444,7 +442,7 @@ typedef struct
     pointer m_messageHandlerFn;
     pointer m_semanticLookupTable;
     ubyte m_numOnEnterMessages;
-    Skip(7);
+    Skip(3);
     pointer m_pOnEnterMessages <format=hex>;
 } NodeDef <read=ReadNodeDef>;
 
@@ -470,7 +468,7 @@ typedef struct ( quad c_pSectionStart )
     
     local string c_res = ReadNodeDef(m_node);
 
-    FSeek(c_pStart + 0x8);   
+    FSeek(c_pStart + 4);   
 } NodeDefPtr <read=c_res>;
 
 typedef struct
@@ -488,7 +486,6 @@ typedef struct
     local quad c_pStart = FTell();
 
     int m_numEntries;
-    Skip(4);
     
     local quad c_pPos = FTell();
     pointer m_pNodeIDs <format=hex>;
@@ -563,7 +560,7 @@ typedef struct ( quad c_pSectionStart )
     
         MessageDistributor m_messageDistributor;    
         
-        FSeek(c_pStart + 0x8); 
+        FSeek(c_pStart + 4); 
 
         c_res = ReadMessageDistributor(m_messageDistributor);
     }
@@ -654,16 +651,16 @@ typedef struct
     local quad c_pStart = FTell();
     NodeDef m_networkInstance;
     int m_numNodes;
-    PadToAlignment(8);
+    PadToAlignment(4);
     local quad c_pBak = FTell();
     pointer m_ppNodes <format=hex>;
 
     FSeek(c_pStart + m_ppNodes);
     NodeDefPtr m_nodes(c_pStart)[m_numNodes] <optimize=false>; 
-    FSeek(c_pBak + 0x8);
+    FSeek(c_pBak + 4);
 
     short m_numAnimSets;
-    PadToAlignment(8);
+    PadToAlignment(4);
     
     c_pBak = FTell();
     pointer m_pEmittedControlParamsInfo <format=hex>;
@@ -671,95 +668,95 @@ typedef struct
     FSeek(c_pStart + m_pEmittedControlParamsInfo);
     EmittedControlParamsInfo m_emittedControlParamsInfo;
     
-    PadToAlignment(8);
-    FSeek(c_pBak + 0x8);
+    PadToAlignment(4);
+    FSeek(c_pBak + 4);
 
     c_pBak = FTell();
     pointer m_pStateMachineNodeIDs <format=hex>;
 
     FSeek(c_pStart + m_pStateMachineNodeIDs);
     NodeIDsArray m_stateMachineNodeIDs;
-    FSeek(c_pBak + 0x8);
+    FSeek(c_pBak + 4);
 
     c_pBak = FTell();
     pointer m_pMessageEmitterNodeIDs <format=hex>;
 
     FSeek(c_pStart + m_pMessageEmitterNodeIDs);
     NodeIDsArray m_messageEmitterNodeIDs;
-    FSeek(c_pBak + 0x8);
+    FSeek(c_pBak + 4);
 
     c_pBak = FTell();
     pointer m_pMultiplyConnectedNodeIDs <format=hex>;
 
     FSeek(c_pStart + m_pMultiplyConnectedNodeIDs);
     NodeIDsArray m_multiplyConnectedNodeIDs;
-    FSeek(c_pBak + 0x8);
+    FSeek(c_pBak + 4);
 
     c_pBak = FTell();
     pointer m_pNodeIDNamesTable <format=hex>;
 
     FSeek(c_pStart + m_pNodeIDNamesTable);
     IDMappedStringTable m_nodeIDNamesTable;
-    FSeek(c_pBak + 0x8);
+    FSeek(c_pBak + 4);
 
     c_pBak = FTell();
     pointer m_pRequestIDNamesTable <format=hex>;
 
     FSeek(c_pStart + m_pRequestIDNamesTable);
     IDMappedStringTable m_requestIDNamesTable;
-    FSeek(c_pBak + 0x8);
+    FSeek(c_pBak + 4);
 
     c_pBak = FTell();
     pointer m_pEventTrackIDNamesTable <format=hex>;
 
     FSeek(c_pStart + m_pEventTrackIDNamesTable);
     IDMappedStringTable m_eventTrackIDNamesTable;
-    FSeek(c_pBak + 0x8);
+    FSeek(c_pBak + 4);
 
     c_pBak = FTell();
     pointer m_pTagTable <format=hex>;
 
     FSeek(c_pStart + m_pTagTable);
     NodeTagTable m_tagTable;
-    FSeek(c_pBak + 0x8);
+    FSeek(c_pBak + 4);
 
     c_pBak = FTell();
     pointer m_pTaskQueuingFnTables <format=hex>;
 
     FSeek(c_pStart + m_pTaskQueuingFnTables);
     SharedTaskFnTables m_taskQueuingFnTables;
-    FSeek(c_pBak + 0x8);
+    FSeek(c_pBak + 4);
 
     c_pBak = FTell();
     pointer m_pOutputCPTaskFnTables <format=hex>;
 
     FSeek(c_pStart + m_pOutputCPTaskFnTables);
     SharedTaskFnTables m_outputCPTaskFnTables;
-    FSeek(c_pBak + 0x8);
+    FSeek(c_pBak + 4);
 
     int m_numMessageDistributors;
-    PadToAlignment(8);
+    PadToAlignment(4);
     
     c_pBak = FTell();
     pointer m_ppMessageDistributors <format=hex>;
 
     FSeek(c_pStart + m_ppMessageDistributors);
     MessageDistributorPtr m_messageDistributors(c_pStart)[m_numMessageDistributors] <optimize=false>;
-    FSeek(c_pBak + 0x8);
+    FSeek(c_pBak + 4);
 
     int m_numSemanticLookupTables;
-    PadToAlignment(8);
+    PadToAlignment(4);
 
     c_pBak = FTell();
     pointer m_pSemanticLookupTable <format=hex>;
 
     FSeek(c_pStart + m_pSemanticLookupTable);
     SemanticLookupTablePtr m_semanticLookupTables(c_pStart)[m_numSemanticLookupTables] <optimize=false>;
-    FSeek(c_pBak + 0x8);
+    FSeek(c_pBak + 4);
 
     int m_maxBonesInAnimSets;
     int m_numNetworkInputControlParameters;
-    PadToAlignment(8);
+    PadToAlignment(4);
     bool m_isPhysical;
     bool m_canCombineTrajectoryTransformTasks;
     PadToAlignment(4);

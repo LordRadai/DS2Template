@@ -101,8 +101,8 @@ enum <ushort> AttribType
 
 typedef struct
 {
-    int64 m_size;
-    int64 m_alignment;
+    int m_size;
+    int m_alignment;
 } Format <read=ReadFormat>;
 
 enum<uint> BlendMode
@@ -125,7 +125,6 @@ string ReadFormat(Format& data)
 
 typedef struct
 {
-    int m_numBits;
     int m_numUInts;     
     int m_data[m_numUInts] <format=binary>;
 } UsedFlags <read=ReadUsedFlags>;
@@ -177,8 +176,8 @@ typedef struct(int iAlignment, quad cStart)
 typedef struct(int iAlignment, quad cStart)
 {      
     int m_count;
-    PadToAlignment(8);
-    quad m_pData <format=hex>;
+    PadToAlignment(4);
+    pointer m_pData <format=hex>;
     
     if (m_count > 0)
     {
@@ -192,7 +191,7 @@ typedef struct(int iAlignment, quad cStart)
 typedef struct(int iAlignment, quad cStart)
 {      
     int m_count;
-    PadToAlignment(8);    
+    PadToAlignment(4);    
     pointer m_pData <format=hex>;
     
     if (m_count > 0)
@@ -207,7 +206,7 @@ typedef struct(int iAlignment, quad cStart)
 typedef struct(int iAlignment, quad cStart)
 {
     int m_count;
-    PadToAlignment(8);
+    PadToAlignment(4);
     pointer m_pData <format=hex>;
     
     if (m_count > 0)
@@ -222,7 +221,7 @@ typedef struct(int iAlignment, quad cStart)
 typedef struct(int iAlignment, quad cStart)
 {    
     int m_count;
-    PadToAlignment(8);    
+    PadToAlignment(4);    
     pointer m_pData <format=hex>;
     
     if (m_count > 0)
@@ -294,7 +293,7 @@ typedef struct(int iAlignment, quad cStart)
 typedef struct(quad cStart)
 {
     int m_numTracks;
-    PadToAlignment(8);
+    PadToAlignment(4);
     pointer m_pEventTracks <format=hex>;
     pointer m_pDataSizes <format=hex>;
     
@@ -337,7 +336,7 @@ typedef struct
 
     short m_nodeID;    
     short m_numEntryConditions;
-    PadToAlignment(8);
+    PadToAlignment(4);
     pointer m_pEntryConditionIndexes <format=hex>;
     
     short m_sourceStateID;
@@ -354,11 +353,11 @@ typedef struct
     }         
     
     short m_numExitConditions;
-    PadToAlignment(8);
+    PadToAlignment(4);
     pointer m_pExitConditionIndexes <format=hex>;
     short m_numExitBreakoutConditions;
     short m_numExitTransitionStates;
-    PadToAlignment(8);    
+    PadToAlignment(4);    
     pointer m_pExitTransitionStateIDs <format=hex>;
     
     pBak = FTell();
@@ -432,13 +431,13 @@ typedef struct(int iAlignment, quad cStart)
 {
     short m_defaultStartingStateID;
     short m_numStates;
-    PadToAlignment(8);
+    PadToAlignment(4);
     pointer m_pStateDefs <format=hex>;
     pointer m_pGlobalStateDef <format=hex>;
     bool m_prioritiseGlobalTransitions;
     PadToAlignment(2);
     short m_numConditions;
-    PadToAlignment(8);
+    PadToAlignment(4);
     pointer m_pConditions <format=hex>;
     
     FSeek(cStart + m_pStateDefs);
@@ -609,7 +608,7 @@ typedef struct(int numJoints)
     bool minimiseRotation;
     bool keepUpright;
     PadToAlignment(4);
-    quad pPerJointParams <format=hex>;
+    pointer pPerJointParams <format=hex>;
     
     local quad cBak = FTell();
     FSeek(cStart + pPerJointParams);
@@ -619,12 +618,12 @@ typedef struct(int numJoints)
 
 typedef struct(int iAlignment, quad cStart)
 {
-    Vector3 m_endEffectorOffset;
     int m_endJointIndex;
     int m_rootJointIndex;
+    Vector3 m_endEffectorOffset;
     int m_numJoints;
     PadToAlignment(iAlignment);
-    quad m_pParams <format=hex>;
+    pointer m_pParams <format=hex>;
     
     if (m_pParams)
     {
@@ -648,7 +647,9 @@ typedef struct(int iAlignment, quad cStart)
 } AttribGunAimSetup;
 
 typedef struct(int iAlignment, quad cStart)
-{     
+{   
+    int m_gunJointIndex;
+    int m_gunBindJointIndex;  
     Vector3 m_gunPivotOffset;
     Vector3 m_gunBarrelOffset;
     Vector3 m_gunPointingVector3;
@@ -673,8 +674,6 @@ typedef struct(int iAlignment, quad cStart)
         FSeek(cBak);
     }
     
-    int m_gunJointIndex;
-    int m_gunBindJointIndex;
     PadToAlignment(iAlignment);
 } AttribGunAimIKChain;
 
@@ -1030,7 +1029,7 @@ typedef struct(int iAlignment, quad cStart)
     short m_numWeightsY;
     bool m_wrapWeightsX;
     bool m_wrapWeightsY;
-    PadToAlignment(8);
+    PadToAlignment(4);
     pointer m_pWeightsX <format=hex>;
     pointer m_pWeightsY <format=hex>;
     
@@ -1068,7 +1067,7 @@ enum<ubyte> EmitRequestActionType
 typedef struct(int iAlignment, quad cStart)
 {
     int m_numEmittedMessage;
-    PadToAlignment(8);
+    PadToAlignment(4);
     pointer m_pEmittedMessages <format=hex>;
     pointer m_pActionTypes <format=hex>;
     PadToAlignment(iAlignment);
@@ -1123,7 +1122,7 @@ typedef struct(int iAlignment, quad cStart)
     float m_footAlignToSurfaceMaxSlopeAngle;
     float m_footLiftingHeightLimit;
     int m_numLimbs; Assert(m_numLimbs == 2);
-    PadToAlignment(16);
+    PadToAlignment(4);
 
     pointer m_pChainInfo[2] <format=hex>;
     
@@ -1149,7 +1148,7 @@ typedef struct(int iAlignment, quad cStart)
     float m_footLiftingLateralAngleLimit;
     float m_closeFootbaseTolFrac;
     int m_numLimbs; Assert(m_numLimbs == 2); //If this is not true then I don't understand how this node works
-    PadToAlignment(8);
+    PadToAlignment(4);
     pointer m_pLimbData[2] <format=hex>;
     
     local int i = 0;
@@ -1212,13 +1211,13 @@ typedef struct(int iAlignment, quad cStart)
     int m_numBoneMappings;
     pointer m_pBoneMappings <format=hex>;
     int m_numTrackIds;
-    PadToAlignment(8);
+    PadToAlignment(4);
     pointer m_pTrackIds <format=hex>;
     int m_numEventIds;
-    PadToAlignment(8);    
+    PadToAlignment(4);    
     pointer m_pEventIds <format=hex>;
     int m_numUnmappedBones;
-    PadToAlignment(8);    
+    PadToAlignment(4);    
     pointer m_pUnmappedQuatOffsets <format=hex>;
     pointer m_pUnmappedBoneIDs <format=hex>;
     
@@ -1257,7 +1256,7 @@ typedef struct(int iAlignment, quad cStart)
 {
     short m_trajectoryBoneIndex;
     short m_numChannelAlphas;
-    PadToAlignment(8);
+    PadToAlignment(4);
     pointer m_pChannelAlphas <format=hex>;
     
     if (m_numChannelAlphas > 0)
@@ -1321,7 +1320,7 @@ typedef struct(int iAlignment, quad cStart)
     bool m_full;
     PadToAlignment(4);
     int m_numElements;
-    PadToAlignment(8);
+    PadToAlignment(4);
     pointer m_pElementDescriptors <format=hex>;
     pointer m_ppData <format=hex>;
     pointer m_pUsedFlags <format=hex>;
