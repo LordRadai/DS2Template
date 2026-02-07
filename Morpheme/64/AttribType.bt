@@ -851,20 +851,22 @@ typedef struct(int iAlignment, quad cStart)
     int m_flags : 1;
     float m_noiseSawFrequency;
     float m_timeOffset;
+    
+    PadToAlignment(iAlignment);
+
     pointer m_pTable1 <format=hex>;
     pointer m_pTable2 <format=hex>;
     pointer m_pTable3 <format=hex>;
     
     PadToAlignment(iAlignment);
-    
     FSeek(cStart + m_pTable1);
-    ubyte m_data1[7];
+    float m_table1[7];
     
     FSeek(cStart + m_pTable2);
-    ubyte m_data2[19];
+    float m_table2[19];
 
     FSeek(cStart + m_pTable3);
-    ubyte m_data3[31];
+    float m_table3[31];
         
     PadToAlignment(iAlignment);    
 } AttribNoiseGen;
