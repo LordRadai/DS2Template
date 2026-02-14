@@ -1178,10 +1178,7 @@ typedef struct
     Vector4 rightUp;
     int leftIndex;
     int rightIndex;
-    PadToAlignment(16);    
-
-    //int leftUnk;
-    //int rightUnk;
+    PadToAlignment(16);
 } AdvancedMapping <read=ReadAdvancedMapping>;
 
 string ReadAdvancedMapping(AdvancedMapping &data)
