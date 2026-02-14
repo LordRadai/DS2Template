@@ -703,9 +703,9 @@ typedef struct(int iAlignment, quad cStart)
 
 typedef struct(int iAlignment, quad cStart)
 {
-    Quaternion m_orientation;
-    float m_fVar1;
-    float m_fvar2;
+    Quaternion m_defaultTargetorientation;
+    float m_defaultSwivelAngle;
+    float m_defaultIkFkBlendWeight;
     bool m_assumeSimpleHierarchy;
     bool m_keepEndEffOrientation;
     bool m_userControlledOrientation;
@@ -714,7 +714,7 @@ typedef struct(int iAlignment, quad cStart)
     bool m_useSpecifiedJointAsTarget;
     bool m_useSpecifiedJointOrientation;
     PadToAlignment(4);
-    int m_iVar1;
+    float m_defaultSwivelContributionToEndEffectorOrientation;
     
     PadToAlignment(iAlignment);    
 } AttribTwoBoneIKSetup;
