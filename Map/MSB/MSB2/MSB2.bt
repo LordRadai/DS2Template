@@ -102,7 +102,7 @@ typedef struct {
     local int i <hidden=true>;
     for (i = 0; i < param.count - 1; i++) {
         FSeek(param.offsets[i].val);
-        Part parts(param.version);
+        PARTS_PARAM_ST parts(param.version);
     }
     FSeek(param.nextParamOffset.val);
 } PartsParam <read=ReadPartsParam, bgcolor=cLtBlue>;
