@@ -14,7 +14,23 @@
 #include "NodeType.bt"
 #include "AttribSemantic.bt"
 
+enum<int> PlatformFormat
+{
+    kPlatform_BigEndian           = 1,  ///<
+    kPlatform_LittleEndian        = 2,  ///<
+    kPlatform_32Bit               = 4,  ///<
+    kPlatform_64Bit               = 8,  ///<
+    kPlatform_Invalid             = 0xFFFFFFFF
+};
+
+local int g_platformFmt = ReadInt(0x4);
+
+Assert(g_platformFmt | kPlatform_32Bit);
+
 LittleEndian();
+
+if (g_platformFmt | kPlatform_BigEndian)
+    BigEndian();
 
 typedef struct
 {
@@ -840,7 +856,7 @@ void SetColorByDataType( AssetType c_iType )
     switch ( c_iType )
     {
     default:
-        Printf("Unknown type=%d\n", c_iType);
+        Printf("Unknown type=%d (0x%x)\n", c_iType, FTell());
         break;
     case kAsset_Rig:
         SetForeColor(cLtRed);
@@ -869,21 +885,12 @@ void SetColorByDataType( AssetType c_iType )
     }    
 }
 
-enum<int> PlatformFormat
-{
-    kPlatform_BigEndian           = 1,  ///<
-    kPlatform_LittleEndian        = 2,  ///<
-    kPlatform_32Bit               = 4,  ///<
-    kPlatform_64Bit               = 8,  ///<
-    kPlatform_Invalid             = 0xFFFFFFFF
-};
-
 typedef struct
 {
-    SetColorByDataType(ReadInt(FTell() + ptrSize));
+    SetColorByDataType(ReadInt(FTell() + 0x8));
 
     int m_binaryVersion;
-    int m_platformFmt; Assert(m_platformFmt | kPlatform_LittleEndian | kPlatform_64Bit);
+    int m_platformFmt; Assert(m_platformFmt | kPlatform_32Bit);
     AssetType m_bundleType;
     uint m_id <format=hex>;
     GUID m_guid;
