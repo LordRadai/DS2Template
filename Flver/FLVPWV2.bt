@@ -1,0 +1,72 @@
+//------------------------------------------------
+//--- 010 Editor v9.0.1 Binary Template
+//
+//      File: FLVPWV2.bt
+//   Authors: Meowmaritus, Radai
+//   Version: V1.1
+//   Purpose: Model extended parameters. Defines twist bone behaviour.
+//  Category: Dark Souls 2
+// File Mask: *.flvpwv
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+
+LittleEndian();
+
+if (ReadInt(0) > 0xFFFFFF)
+    BigEndian();
+
+struct
+{
+    int Version; Assert(Version == 1);
+    byte bVar4;
+    byte bVar5;
+    ushort NumBones;
+    ushort BoneListOffset <format=hex>; Assert(BoneListOffset == 0x14);
+    ushort BoneListSize <format=hex>; Assert(BoneListSize == 0x94);
+    uint iVarC;
+    uint iVar10;
+} Header <bgcolor=cYellow>;
+
+typedef enum<ubyte>
+{
+    TWIST_BONE_NONE = 0,
+    TWIST_BONE_ONE_AXIS = 1,
+    TWIST_BONE_THREE_AXIS = 2
+} TwistBoneType;
+
+typedef struct
+{
+    wchar_t Name[64];
+    short BaseBone;
+    short RotationAdditionBone;
+    float fRotationScale;
+    TwistBoneType Type;
+    ubyte bVar89;
+    ubyte bVar8A;
+    ubyte bVar8B;
+    uint iVar8C;
+    uint iVar90;
+} Bone <optimize=false, read=ReadBone, bgcolor=cLtGreen>;
+
+string ReadBone(Bone& v) {
+    string str;
+    
+    switch (v.Type) 
+    {
+    case TWIST_BONE_NONE:
+        SPrintf(str, "%s", v.Name);
+        break;
+    case TWIST_BONE_ONE_AXIS:
+        SPrintf(str, "1-Axis : %s (%d - %d | %.3f)", v.Name, v.BaseBone, v.RotationAdditionBone, v.fRotationScale);
+        break;
+    case TWIST_BONE_THREE_AXIS:
+        SPrintf(str, "3-Axis : %s (%d - %d | %.3f)", v.Name, v.BaseBone, v.RotationAdditionBone, v.fRotationScale);
+        break;
+    }
+    
+    return str;
+}
+
+if (Header.NumBones > 0)
+    struct { Bone Bones[Header.NumBones]; } Bones;
