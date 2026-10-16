@@ -1,0 +1,303 @@
+//------------------------------------------------
+//--- 010 Editor v16.0.2 Binary Template
+//
+// File: FRPG2 AP2 anim file
+// File Mask: *.ani
+//------------------------------------------------
+
+LittleEndian();
+
+local uint v = ReadUInt(0) & 0x3FFFFFFF;
+
+if (v != 0x20100910 && v != 0x20051014)
+    BigEndian();
+
+typedef enum<ubyte>
+{
+    TOD_VEC_TRANSLATION,
+    TOD_VEC_TRANSLATION_IN,
+    TOD_VEC_TRANSLATION_OUT,
+    TOD_VEC_ROTATION,
+    TOD_VEC_ROTATION_IN,
+    TOD_VEC_ROTATION_OUT,
+    TOD_VEC_SCALE,
+    
+    TOD_VEC_MAX
+} RM_AP2_TOD_VECTOR_ID;
+
+typedef enum<ubyte> { TOD_STORAGE_FLOAT = 0, TOD_STORAGE_SHORT = 1 } RM_AP2_TOD_STORAGE;
+
+typedef struct
+{
+    short x;
+    short y;
+    short z;
+} ShortVector <read=ReadShortVector>;
+
+string ReadShortVector(ShortVector& data)
+{
+    string buffer;
+    SPrintf(buffer, "%d , %d , %d", data.x, data.y, data.z);
+    
+    return buffer;
+}
+
+typedef struct
+{
+    float x;
+    float y;
+    float z;
+} FloatVector <read=ReadFloatVector>;
+
+string ReadFloatVector(FloatVector& data)
+{
+    string buffer;
+    SPrintf(buffer, "%.2f , %.2f , %.2f", data.x, data.y, data.z);
+    
+    return buffer;
+}
+
+typedef enum<int>
+{
+    TOD_KEY_TRS_EULER_U8      = 1,
+    TOD_KEY_TRS_EULER_U16     = 2,
+    TOD_KEY_TRS_EULER_S32     = 3,
+    TOD_KEY_R_EULER_U16       = 4,
+    TOD_KEY_R_EULER_S32       = 5,
+    TOD_KEY_TR_QUAT_U8        = 6,
+    TOD_KEY_TRS_QUAT_U16      = 7,
+    TOD_KEY_TRS_QUAT_S32      = 8,
+    TOD_KEY_R_QUAT_S16        = 9,
+    TOD_KEY_R_QUAT_S32        = 10,
+    TOD_KEY_TR_PACKED_U8      = 11,
+    TOD_KEY_TRS_PACKED_U16    = 12,
+    TOD_KEY_TRS_PACKED_S32    = 13,
+    TOD_KEY_R_PACKED_S16      = 14,
+    TOD_KEY_R_PACKED_S32      = 15
+} TOD_KEY_TYPE_ID;
+
+typedef struct // TOD_KEY_TRS_EULER_U8, 8 bytes
+{
+    short frame;
+    ubyte t, tIn, tOut;
+    ubyte r, rIn, rOut;
+} TOD_KEY_1;
+
+typedef struct // TOD_KEY_TRS_EULER_U16, 16 bytes
+{
+    short frame;
+    ushort t, tIn, tOut;
+    ushort r, rIn, rOut;
+    ushort s;
+} TOD_KEY_2;
+
+typedef struct // TOD_KEY_TRS_EULER_S32, 32 bytes
+{
+    int frame;
+    int t, tIn, tOut;
+    int r, rIn, rOut;
+    int s;
+} TOD_KEY_3;
+
+typedef struct // TOD_KEY_R_EULER_U16, 8 bytes
+{
+    short frame;
+    ushort r, rIn, rOut;
+} TOD_KEY_4;
+
+typedef struct // TOD_KEY_R_EULER_S32, 16 bytes
+{
+    int frame;
+    int r, rIn, rOut;
+} TOD_KEY_5;
+
+typedef struct // TOD_KEY_TR_QUAT_U8, 8 bytes
+{
+    short frame;
+    ubyte t, tIn, tOut;
+    ubyte r;
+    ubyte pad[2] <hidden=true>;
+} TOD_KEY_6;
+
+typedef struct // TOD_KEY_TRS_QUAT_U16, 12 bytes
+{
+    short frame;
+    ushort t, tIn, tOut;
+    ushort r;
+    ushort s;
+} TOD_KEY_7;
+
+typedef struct // TOD_KEY_TRS_QUAT_S32, 24 bytes
+{
+    int frame;
+    int t, tIn, tOut;
+    int r;
+    int s;
+} TOD_KEY_8;
+
+typedef struct // TOD_KEY_R_QUAT_S16, 4 bytes
+{
+    short frame;
+    short r;
+} TOD_KEY_9;
+
+typedef struct // TOD_KEY_R_QUAT_S32, 8 bytes
+{
+    int frame;
+    int r;
+} TOD_KEY_10;
+
+typedef struct // TOD_KEY_TR_PACKED_U8, 12 bytes
+{
+    short frame;
+    ubyte t, tIn, tOut;
+    ubyte pad[3] <hidden=true>;
+    uint r <format=hex>; // packed
+} TOD_KEY_11;
+
+typedef struct // TOD_KEY_TRS_PACKED_U16, 16 bytes (layout inferred from size, verify)
+{
+    short frame;
+    ushort t, tIn, tOut;
+    uint r <format=hex>; // packed
+    ushort s;
+    ushort pad <hidden=true>;
+} TOD_KEY_12;
+
+typedef struct // TOD_KEY_TRS_PACKED_S32, 24 bytes
+{
+    int frame;
+    int t, tIn, tOut;
+    uint r <format=hex>; // packed
+    int s;
+} TOD_KEY_13;
+
+typedef struct // TOD_KEY_R_PACKED_S16, 8 bytes
+{
+    short frame;
+    ushort pad <hidden=true>;
+    uint r <format=hex>; // packed
+} TOD_KEY_14;
+
+typedef struct // TOD_KEY_R_PACKED_S32, 8 bytes
+{
+    int frame;
+    uint r <format=hex>; // packed
+} TOD_KEY_15;
+
+typedef struct
+{
+    SetBackColor(cLtBlue);
+
+    uint keyArrayOffset <format=hex>;
+    int numKeys;
+    TOD_KEY_TYPE_ID keyType;
+    
+    if (keyArrayOffset != 0 && numKeys > 0)
+    {
+        local quad cPosBak = FTell();
+        FSeek(keyArrayOffset);
+        
+        switch (keyType)
+        {
+            case TOD_KEY_TRS_EULER_U8:   TOD_KEY_1  keys[numKeys]; break;
+            case TOD_KEY_TRS_EULER_U16:  TOD_KEY_2  keys[numKeys]; break;
+            case TOD_KEY_TRS_EULER_S32:  TOD_KEY_3  keys[numKeys]; break;
+            case TOD_KEY_R_EULER_U16:    TOD_KEY_4  keys[numKeys]; break;
+            case TOD_KEY_R_EULER_S32:    TOD_KEY_5  keys[numKeys]; break;
+            case TOD_KEY_TR_QUAT_U8:     TOD_KEY_6  keys[numKeys]; break;
+            case TOD_KEY_TRS_QUAT_U16:   TOD_KEY_7  keys[numKeys]; break;
+            case TOD_KEY_TRS_QUAT_S32:   TOD_KEY_8  keys[numKeys]; break;
+            case TOD_KEY_R_QUAT_S16:     TOD_KEY_9  keys[numKeys]; break;
+            case TOD_KEY_R_QUAT_S32:     TOD_KEY_10 keys[numKeys]; break;
+            case TOD_KEY_TR_PACKED_U8:   TOD_KEY_11 keys[numKeys]; break;
+            case TOD_KEY_TRS_PACKED_U16: TOD_KEY_12 keys[numKeys]; break;
+            case TOD_KEY_TRS_PACKED_S32: TOD_KEY_13 keys[numKeys]; break;
+            case TOD_KEY_R_PACKED_S16:   TOD_KEY_14 keys[numKeys]; break;
+            case TOD_KEY_R_PACKED_S32:   TOD_KEY_15 keys[numKeys]; break;
+            default:
+                Warning("Unknown TOD key type %d", keyType);
+                break;
+        }
+        
+        FSeek(cPosBak);
+    }
+} TOD_BLOCK_ST <read=ReadTodBlock>;
+
+string ReadTodBlock(TOD_BLOCK_ST& data)
+{
+    string buffer;
+    SPrintf(buffer, "%d - %s", data.numKeys, EnumToString(data.keyType));
+    return buffer;
+}
+
+typedef struct
+{
+    SetBackColor(cLtGreen);
+
+    uint nameOffset <format=hex>;
+    uint unk04 <hidden=true>;
+    short isAnimated;
+    ubyte unk0A[8] <hidden=true>;
+    ushort flags <format=hex>;
+    FloatVector bindPoseTranslation;
+    FloatVector bindPoseRotation;
+    FloatVector bindPoseScale;
+    uint todOffset <format=hex>;
+    uint unk3C <hidden=true>;
+    
+    local quad cPosBak = FTell();
+    FSeek(nameOffset);
+    string name;
+    FSeek(cPosBak);
+    
+    cPosBak = FTell();
+    FSeek(todOffset);
+    TOD_BLOCK_ST todBlock;
+    FSeek(cPosBak);
+} _RM_AP2_OBJECT_ST <read=ReadObject>;
+
+string ReadObject(_RM_AP2_OBJECT_ST& data)
+{
+    return data.name;
+}
+
+typedef struct
+{
+    SetBackColor(cLtRed);
+    
+    uint magic <format=hex>;
+    int startFarme;
+    int endFrame;
+    uint objOffset <format=hex>;
+    uint objCount;
+    uint floatVecOffset <format=hex>;
+    uint shortVecOffset <format=hex>;
+    uint numFloatVec;
+    uint numShortVec;
+    uint iVar24 <hidden=true>;
+    uint iVar28 <hidden=true>;
+    RM_AP2_TOD_STORAGE storage[TOD_VEC_MAX];
+    
+    FSeek(objOffset);
+    _RM_AP2_OBJECT_ST objects[objCount] <optimize=false>;
+} _RM_AP2_ST;
+
+_RM_AP2_ST ani;
+
+SetBackColor(cBlack);
+SetForeColor(cLtYellow);
+
+if (ani.numFloatVec > 0)
+{
+    FSeek(ani.floatVecOffset);
+    FloatVector floatVecs[ani.numFloatVec];
+}
+
+SetForeColor(cDkYellow);
+
+if (ani.numShortVec > 0)
+{
+    FSeek(ani.shortVecOffset);
+    ShortVector shortVecs[ani.numShortVec];
+}
