@@ -40,9 +40,11 @@ enum <ubyte> META_INFO_TYPE
 
 struct FILTER_PARAM_HEADER
 {
+    SetBackColor(cGray);
+    
     char   m_Magic[4]; Assert(m_Magic == "filt", "Not a fltparam file");
     uint32 m_Version;  Assert(m_Version <= 2, "Unknown fltparam version");
-    uint32 m_Reserved08;
+    uint32 m_Reserved08 <hidden=true>; Assert(m_Reserved08 == 0);
     uint32 m_FilterNum;
     uint32 m_IdSetNum;
     uint32 m_FilterOffsetTableOffset <format=hex>;  // u32[m_FilterNum], offsets into the filter records
@@ -67,14 +69,12 @@ struct FILTER_PARAM_HEADER
         }
         else
         {
-            uint32 m_Reserved30[3];
+            uint32 m_Reserved30[3] <hidden=true>; Assert(m_Reserved30[0] == 0 && m_Reserved30[1] == 0 && m_Reserved30[2] == 0);
         }
-        uint32 m_Reserved3C;
+        uint32 m_Reserved3C <hidden=true>; Assert(m_Reserved3C == 0);
     }
-} header <bgcolor=cLtRed>;
+} header;
 
-// Values are stored in fixed-size slots: vectors always take 16 bytes, unused components are zero.
-// Each param's value array is padded to 4 bytes.
 struct DL_VECTOR2AL { float x; float y; uint32 pad[2]; Assert(pad[0] == 0 && pad[1] == 0, "Vector2 padding not zero"); };
 struct DL_VECTOR3AL { float x; float y; float z; uint32 pad; Assert(pad == 0, "Vector3 padding not zero"); };
 struct DL_VECTOR4AL { float x; float y; float z; float w; };
@@ -82,9 +82,13 @@ struct DL_COLOR_32  { ubyte b; ubyte g; ubyte r; ubyte a; };
 
 struct PARAM_RECORD
 {
-    uint32 m_ValueOffset <format=hex>;          // into m_ValueBase
+    SetBackColor(cAqua);
+
+    uint32 m_ValueOffset <format=hex>;
+    
     if (header.m_Version >= 1)
-        uint32 m_ValueIdOffset <format=hex>;    // into m_ValueIdBase
+        uint32 m_ValueIdOffset <format=hex>;
+        
     META_INFO_TYPE m_Type;
     ubyte  m_ValueNum;
     uint16 m_Reserved; Assert(m_Reserved == 0, "Param record reserved field not zero");
@@ -95,7 +99,7 @@ struct PARAM_RECORD
     if (m_ValueNum > 0)
     {
         FSeek(header.m_ValueBase + m_ValueOffset);
-        SetBackColor(cLtBlue);
+
         switch (m_Type)
         {
             case META_INFO_TYPE_S8:      byte         m_Values[m_ValueNum]; break;
@@ -116,7 +120,6 @@ struct PARAM_RECORD
         if (header.m_Version >= 1)
         {
             FSeek(header.m_ValueIdBase + m_ValueIdOffset);
-            SetBackColor(cRed);
             uint32 m_ValueIds[m_ValueNum];      // filter id of each value (0..15 are the slots)
         }
     }
@@ -126,17 +129,22 @@ struct PARAM_RECORD
 
 struct PARAM_ENTRY
 {
-    uint32 m_RecordOffset <format=hex>;         // into m_ParamRecordBase
+    SetBackColor(cLtRed);
+
+    uint32 m_RecordOffset <format=hex>;
+    
     local quad pos = FTell();
     FSeek(header.m_ParamRecordBase + m_RecordOffset);
-    PARAM_RECORD m_Record <bgcolor=cAqua>;
+    PARAM_RECORD m_Record;
     FSeek(pos);
 };
 
 struct FILTER_RECORD
 {
+    SetBackColor(cLtYellow);
+
     uint32 m_ParamNum;
-    uint32 m_ParamTableOffset <format=hex>;     // byte offset into m_ParamOffsetTableOffset
+    uint32 m_ParamTableOffset <format=hex>;
     string m_Name;                              // Shift-JIS
 
     local quad pos = FTell();
@@ -147,10 +155,12 @@ struct FILTER_RECORD
 
 struct FILTER_ENTRY
 {
-    uint32 m_RecordOffset <format=hex>;         // into m_FilterRecordBase
+    SetBackColor(cBlack);
+
+    uint32 m_RecordOffset <format=hex>;
     local quad pos = FTell();
     FSeek(header.m_FilterRecordBase + m_RecordOffset);
-    FILTER_RECORD m_Record <bgcolor=cLtGreen>;
+    FILTER_RECORD m_Record;
     FSeek(pos);
 };
 
@@ -160,21 +170,24 @@ FILTER_ENTRY filters[header.m_FilterNum] <optimize=false>;
 // GetIdSetByIndex(i) = m_IdSetBase + i * (m_FilterNum + 1). GetIdSet(id) searches m_Id.
 struct ID_SET
 {
+    SetBackColor(cGreen);
+    
     ubyte m_Id;
-    ubyte m_FilterIds[header.m_FilterNum];      // filter id (slot) per filter, indexed like filters[]
+    ubyte m_FilterIds[header.m_FilterNum]; 
 };
 
 FSeek(header.m_IdSetBase);
-ID_SET idSets[header.m_IdSetNum] <bgcolor=cYellow, optimize=true>;
+ID_SET idSets[header.m_IdSetNum] <optimize=true>;
 
 if (header.m_Version >= 2)
 {
-    // GetEditedId(filter, i) finds the entry whose m_FilterIndex == filter and returns m_EditedIds[i]
     struct EDITED_FILTER
     {
+        SetBackColor(cLtBlue);
+        
         uint32 m_FilterIndex;
         uint32 m_EditedIdNum;
-        uint32 m_EditedIdOffset <format=hex>;   // into m_EditedIdBase
+        uint32 m_EditedIdOffset <format=hex>;
 
         local quad pos = FTell();
         FSeek(header.m_EditedIdBase + m_EditedIdOffset);
