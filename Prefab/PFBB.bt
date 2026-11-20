@@ -15,6 +15,8 @@
 //------------------------------------------------
 
 LittleEndian();
+BitfieldRightToLeft();  // PC (MSVC) packs bitfields from the LSB. Fields below are
+                        // declared in source order (PS3 packs the same order from the MSB).
 
 //------------------------------------------------
 // Enums
@@ -33,21 +35,30 @@ enum <uint> PF_NODE_TYPE
     PF_NODE_ACTION = 2,    // pData -> PF_PFBBIN_ACTION_BLOCK
 };
 
-// Token types inferred from data only (unverified against code).
+// RPN token types (PfEvaluationFlowImpl::_EvaluateCondition). The condition is
+// true when the value left on top of the stack is non-zero.
 enum <uint> PF_TOKEN_TYPE
 {
-    PF_TOKEN_FLOAT    = 0,  // float constant
-    PF_TOKEN_OPERATOR = 1,  // operator id (9 seen, compares var with const)
-    PF_TOKEN_VARIABLE = 2,  // judge param / variable id (2205, 2210 seen)
+    PF_TOKEN_LITERAL     = 0,  // push PfAnyData literal (float or int bits)
+    PF_TOKEN_OPERATOR    = 1,  // built-in operator by index (9 seen, compare)
+    PF_TOKEN_EVENT_PARAM = 2,  // push event accessor value (2205 = StateJudge_LocalValue, 2210 = StateJudge_ActionFinished)
+    PF_TOKEN_FUNCTION    = 3,  // call registered function (1024 = Xreal, 1025 = Xbool)
 };
 
 //------------------------------------------------
 // Helpers
 //------------------------------------------------
 
-// Flow nodes form a DAG (branches rejoin through pNext), so each node is
+// Flow nodes form a DAG (true and false paths can share nodes), so each node is
 // expanded once and later references only show the offset.
 local int64 g_visited[4096];
+
+// What the FormDesign chunk being parsed belongs to, so it can be typed:
+// an action id (5000..5016), or CTX_ASSET_ATTR / CTX_PARTS_ATTR | attribute id.
+local uint g_fdContext = 0;
+#define CTX_ASSET_ATTR 0x10000
+#define CTX_PARTS_ATTR 0x20000
+local uint g_attrOwner = 0;     // CTX_ASSET_ATTR or CTX_PARTS_ATTR while parsing attributes
 local int   g_visitedCount = 0;
 
 int IsVisited(int64 off)
@@ -101,7 +112,7 @@ typedef struct {
     short unk1A; Assert(unk1A == 1);
     short unk1C; Assert(unk1C == 1);
     short unk1E; Assert(unk1E == 1);
-    uint64 pRelocTable <format=hex>;        // -> PF_RELOC_TABLE (not itself relocated)
+    uint64 pRelocTable <format=hex>;   		// -> PF_RELOC_TABLE (not itself relocated)
     uint64 pParts <format=hex>;             // -> PF_PFBBIN_PARTS_BLOCK[partsCount]
     uint64 pAssets <format=hex>;            // -> PF_PFBBIN_ASSET_BLOCK[assetCount]
     ushort partsCount;
@@ -117,7 +128,7 @@ struct PF_NODE;
 
 typedef struct {
     PF_TOKEN_TYPE type;
-    if (type == PF_TOKEN_FLOAT)
+    if (type == PF_TOKEN_LITERAL)
         float value;
     else
         uint value;
@@ -125,17 +136,19 @@ typedef struct {
 
 string ReadToken(PF_TOKEN &t)
 {
-    if (t.type == PF_TOKEN_FLOAT)
+    if (t.type == PF_TOKEN_LITERAL)
         return Str("float %g", t.value);
     if (t.type == PF_TOKEN_OPERATOR)
         return Str("op %u", t.value);
-    if (t.type == PF_TOKEN_VARIABLE)
-        return Str("var %u", t.value);
+    if (t.type == PF_TOKEN_EVENT_PARAM)
+        return Str("param %u", t.value);
+    if (t.type == PF_TOKEN_FUNCTION)
+        return Str("func %u", t.value);
     return Str("type %u: %u", t.type, t.value);
 }
 
-// Condition: the token list is evaluated; if true the pThen chain runs,
-// which rejoins the owning node's pNext chain.
+// PF_PFBBIN_CONDITION_BLOCK: if the expression is true evaluation continues
+// at pThen, otherwise at the owning node's pNext.
 struct PF_BRANCH {
     uint tokenCount;
     uint pad04 <hidden=true>;
@@ -156,8 +169,10 @@ struct PF_BRANCH {
 
 struct PF_CHUNK;
 
-// Action command (5001 = change state, arg = target asset hash;
-// 5008 / 5012 seen with 12 / 8 byte blob args).
+// Action ids (AppPrefabSystem::Initialize): 5000 Smash, 5001 Transfigure
+// (arg = target asset hash), 5003 Sfx, 5004 Break, 5005 Timer, 5006 Touch,
+// 5007 Bullet, 5008 PlayAnim, 5009 Damage, 5010 Hide, 5011 Sound,
+// 5012 ResetPose, 5013 Invincible, 5014 Region, 5015 KeyGuide, 5016 Show.
 struct PF_PFBBIN_ACTION_BLOCK {
     uint actionId;
     uint argCount;
@@ -165,12 +180,16 @@ struct PF_PFBBIN_ACTION_BLOCK {
 
     local int64 ret = FTell();
     if (pArgs != 0 && argCount > 0) {
+        local uint savedCtx = g_fdContext;
+        g_fdContext = actionId;
         FSeek(pArgs);
         struct PF_CHUNK args[argCount] <optimize=false>;
+        g_fdContext = savedCtx;
     }
     FSeek(ret);
 };
 
+// PF_PFBBIN_EVAL_FLOW_NODE_BLOCK
 struct PF_NODE {
     local int64 self = FTell();
     MarkVisited(self);
@@ -184,7 +203,7 @@ struct PF_NODE {
     if (pData != 0) {
         FSeek(pData);
         switch (type) {
-            case PF_NODE_EVENT:   uint eventId <format=hex>; break;
+            case PF_NODE_EVENT:   uint eventId; break;
             case PF_NODE_BRANCH:  struct PF_BRANCH branch;   break;
             case PF_NODE_ACTION: struct PF_PFBBIN_ACTION_BLOCK action; break;
         }
@@ -199,7 +218,7 @@ struct PF_NODE {
 string ReadNode(struct PF_NODE &n)
 {
     if (n.type == PF_NODE_EVENT && exists(n.eventId))
-        return Str("Event 0x%X", n.eventId);
+        return Str("Event %d", n.eventId);
     if (n.type == PF_NODE_BRANCH)
         return "Branch";
     if (n.type == PF_NODE_ACTION && exists(n.action))
@@ -211,6 +230,141 @@ string ReadNode(struct PF_NODE &n)
 // Values
 //------------------------------------------------
 
+//------------------------------------------------
+// FormDesign payloads
+// Sources: PS3 PrefabStateActActionMaker::On* (0x79574c..0x798fb0),
+// StateActJudgePrefabActionHandler::OnTransfigure (0x799348),
+// MapObjStateActComponent::OnGraphRequested (0x78c0f8),
+// PfPrefabParts::GetAssetAttributeChunk / GetPrsAttributeChunk.
+//------------------------------------------------
+
+// Asset attribute 0x66, chunk 0 -> StateActGraphMaker::AddState
+typedef struct {
+    ubyte stateId;                  // compared by StateJudge_LocalValue
+    ubyte flag01;                   // bool, last AddState argument
+    ubyte flag02;                   // bool, 7th AddState argument
+    ubyte multiPlayType;            // StateActMultiPlayType (0, 1, 2)
+    uint  eventFlag[3];             // AddState eventFlag 1..3 (StateJudge_EventFlag1..3)
+    // modelVariant is not stored: it is parsed from the .sib file name ("_N")
+} PF_FD_STATE;
+
+// Parts attribute 1 (GetAssetAttributeChunk)
+typedef struct {
+    uint assetHash <format=hex>;    // initial asset / state
+} PF_FD_PARTS_ASSET;
+
+// Parts attribute 2 (GetPrsAttributeChunk), 0x1C bytes
+typedef struct {
+    float position[3];
+    float rotation[3];
+    float scale;                    // 1.0 in samples (meaning of 7th float unverified)
+} PF_FD_PARTS_PRS;
+
+// 5001 Transfigure (state change)
+typedef struct {
+    uint assetHash <format=hex>;    // target asset; its 0x66 stateId is used
+} PF_FD_TRANSFIGURE;
+
+// 5003 Sfx -> AddCommand_Sfx(CreateType, PositionType, short, uint sfxId, uint,
+//                            bool, int, ShowEffectType, float, HideEffectType, float)
+typedef struct {
+    uint createType   : 1;          // StateActCreateType (must be 0 when source == 1)
+    uint source       : 2;          // 1 = explicit sfxId, 2 = ObjGraphicParam resident slot
+    uint positionType : 5;          // StateActPositionType (0, 1, 2)
+    uint unk          : 4;
+    uint slot         : 20;         // resident sfx slot (source 2)
+    uint slot2;                     // second resident slot lookup (source 2)
+    int  sfxId;                     // source 1
+    int  unk0C;                     // int argument
+    float showTime;                 // show effect time
+    float hideTime;                 // hide effect time
+} PF_FD_SFX;
+
+// 5000 Smash -> AddCommand_Smash(float, float, float, float, PositionType)
+typedef struct {
+    float value0;
+    uint  positionType;             // 0, 3 or other selects the PositionType passed
+    float value1;
+    float value2;
+    float value3;
+} PF_FD_SMASH;
+
+// 5005 Timer -> AddCommand_Timer(float)
+typedef struct {
+    float time;
+} PF_FD_TIMER;
+
+// 5007 Bullet -> AddCommand_Bullet(CreateType, uint, uint)
+typedef struct {
+    ubyte source;                   // 1 = explicit ids, 2 = from ObjInsParam (+4/+8)
+    ubyte createType;               // StateActCreateType (0, 1)
+    ushort pad02 <hidden=true>;
+    uint  bulletArg0;               // source 1
+    uint  bulletArg1;               // source 1
+} PF_FD_BULLET;
+
+// 5008 PlayAnim -> AddCommand_PlayAnim(int, bool, InitialFrameType, float)
+//              or AddCommand_RandomPlayAnim(int, bool, float, uint, uint)
+typedef struct {
+    int  animId;
+    uint loop             : 1;      // bool argument
+    uint unk1             : 1;
+    uint initialFrameType : 2;      // StateActAnimInitialFrameType, 3 = RandomPlayAnim
+    uint source           : 2;      // 1 = explicit animId, 2 = ObjGraphicParam
+    uint unk6             : 1;
+    uint randomMin        : 10;     // RandomPlayAnim
+    uint randomMax        : 10;     // RandomPlayAnim
+    uint pad              : 5 <hidden=true>;
+    float value;                    // float argument (frame / rate)
+} PF_FD_PLAYANIM;
+
+// 5010 Hide / 5016 Show -> AddCommand_Hide/Show(float) or (float x4)
+typedef struct {
+    float value;
+    uint  use0  : 1;                // 4-float form: argument N = value if set, else -1.0
+    uint  use1  : 1;
+    uint  use2  : 1;
+    uint  use3  : 1;
+    uint  multi : 28;               // non-zero selects the 4-float form
+} PF_FD_SHOWHIDE;
+
+// 5011 Sound -> AddCommand_Sound(CreateType, PositionType, ushort, int)
+typedef struct {
+    short  positionType;            // StateActPositionType (0, 1, 2)
+    ushort unk02;                   // ushort argument
+    int    soundId;
+    short  createType;              // StateActCreateType (0, 1)
+} PF_FD_SOUND;
+
+// 5012 ResetPose -> AddCommand_ResetPose(ResetPoseModeType, int)
+typedef struct {
+    uint mode;                      // StateActResetPoseModeType
+    int  value;
+} PF_FD_RESETPOSE;
+
+// 5014 Region -> AddCommand_Sphere/Cylinder/BoxRegion
+typedef struct {
+    float offset[3];
+    float angle;                    // yaw, normalized
+    uint  reserved  : 1;            // asserts if set
+    uint  unk       : 8;            // unsigned char argument
+    uint  condition : 2;            // StateActRegionConditionType
+    uint  shape     : 21;           // 0 sphere, 1 cylinder, 2 box
+    float sphereRadius;
+    float cylinderRadius;
+    float cylinderHeight;
+    float boxSize[3];
+} PF_FD_REGION;
+
+// 5015 KeyGuide -> AddCommand_KeyGuide(int, int)
+typedef struct {
+    int value0;
+    int value1;
+} PF_FD_KEYGUIDE;
+
+// 5006 Touch and 5013 Invincible take no argument.
+// 5004 Break and 5009 Damage assert in the StateAct action maker.
+
 typedef struct {
     uint64 size;
     uint64 pData <format=hex>;
@@ -219,9 +373,27 @@ typedef struct {
     if (pData != 0 && size > 0) {
         FSeek(pData);
         uchar data[size] <format=hex>;
-        if (size == 4) {            // usually an asset hash
-            FSeek(pData);
-            uint asUInt <format=hex>;
+        FSeek(pData);
+        switch (g_fdContext) {
+            case CTX_ASSET_ATTR | 0x66: PF_FD_STATE       state;    break;
+            case CTX_PARTS_ATTR | 1:    PF_FD_PARTS_ASSET asset;    break;
+            case CTX_PARTS_ATTR | 2:    PF_FD_PARTS_PRS   prs;      break;
+            case 5000: PF_FD_SMASH       smash;      break;
+            case 5001: PF_FD_TRANSFIGURE transfigure; break;
+            case 5003: PF_FD_SFX         sfx;        break;
+            case 5005: PF_FD_TIMER       timer;      break;
+            case 5007: PF_FD_BULLET      bullet;     break;
+            case 5008: PF_FD_PLAYANIM    playAnim;   break;
+            case 5010:
+            case 5016: PF_FD_SHOWHIDE    showHide;   break;
+            case 5011: PF_FD_SOUND       sound;      break;
+            case 5012: PF_FD_RESETPOSE   resetPose;  break;
+            case 5014: PF_FD_REGION      region;     break;
+            case 5015: PF_FD_KEYGUIDE    keyGuide;   break;
+            default:
+                if (size == 4)
+                    uint asUInt <format=hex>;
+                break;
         }
     }
     FSeek(ret);
@@ -250,8 +422,8 @@ struct PF_CHUNK {
     if (pData != 0) {
         FSeek(pData);
         switch (type) {
-            case PF_CHUNK_FORM_DESIGN: 		PF_PFBBIN_FORM_DESIGN_CHUNK_BLOCK blob; break;
-            case PF_CHUNK_EVENT_ACTION:   	PF_PFBBIN_EVENT_ACTION_CHUNK_BLOCK flows; break;
+            case PF_CHUNK_FORM_DESIGN: PF_PFBBIN_FORM_DESIGN_CHUNK_BLOCK blob;       break;
+            case PF_CHUNK_EVENT_ACTION:   PF_PFBBIN_EVENT_ACTION_CHUNK_BLOCK flows; break;
         }
     }
     FSeek(ret);
@@ -272,8 +444,11 @@ typedef struct {
 
     local int64 ret = FTell();
     if (pValues != 0 && valueCount > 0) {
+        local uint savedCtx = g_fdContext;
+        g_fdContext = g_attrOwner | id;
         FSeek(pValues);
         struct PF_CHUNK values[valueCount] <optimize=false>;
+        g_fdContext = savedCtx;
     }
     FSeek(ret);
 } PF_PFBBIN_ATTRIBUTE_BLOCK <read=ReadAttribute>;
@@ -294,6 +469,7 @@ typedef struct {
 
     local int64 ret = FTell();
     if (pAttributes != 0 && attributeCount > 0) {
+        g_attrOwner = CTX_ASSET_ATTR;
         FSeek(pAttributes);
         PF_PFBBIN_ATTRIBUTE_BLOCK attributes[attributeCount] <optimize=false>;
     }
@@ -317,6 +493,7 @@ typedef struct {
 
     local int64 ret = FTell();
     if (pAttributes != 0 && attributeCount > 0) {
+        g_attrOwner = CTX_PARTS_ATTR;
         FSeek(pAttributes);
         PF_PFBBIN_ATTRIBUTE_BLOCK attributes[attributeCount] <optimize=false>;
     }
