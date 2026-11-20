@@ -105,8 +105,8 @@ typedef struct {
     short unk0A; Assert(unk0A == 0);
     int unk0C; Assert(unk0C == 0);
     int unk10; Assert(unk10 == 0);
-    ubyte platformFlag14;
-    ubyte platformFlag15;
+    ubyte byteOrderFlag;
+    ubyte bitOrderFlag;
     short unk16;
     short version; Assert(version == 1);   // TestPfbbinHeaderValidation requires 1
     short unk1A; Assert(unk1A == 1);
