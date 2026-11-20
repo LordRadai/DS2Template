@@ -28,16 +28,15 @@ BitfieldRightToLeft();
 
 enum <uint> PF_CHUNK_TYPE
 {
-    PF_CHUNK_FORM_DESIGN = 0,    // -> PF_PFBBIN_FORM_DESIGN_CHUNK_BLOCK (raw bytes, endian-agnostic, e.g. FormDesign)
+    PF_CHUNK_FORM_DESIGN = 0,       // -> PF_PFBBIN_FORM_DESIGN_CHUNK_BLOCK (raw bytes, endian-agnostic, e.g. FormDesign)
     PF_CHUNK_EVENT_ACTION   = 1,    // -> PF_PFBBIN_EVENT_ACTION_CHUNK_BLOCK (EventAction flows)
 };
 
 enum <uint> PF_NODE_TYPE
 {
-    PF_NODE_EVENT   = 0,    // pData -> uint eventId (0xBB9 damaged, 0xBBB upper durability,
-                            // 0xBBC judge, 0xBBD action, 0xBBE impact/touched)
+    PF_NODE_EVENT   = 0,    // pData -> uint eventId
     PF_NODE_BRANCH  = 1,    // pData -> PF_BRANCH
-    PF_NODE_ACTION = 2,    // pData -> PF_PFBBIN_ACTION_BLOCK
+    PF_NODE_ACTION = 2,     // pData -> PF_PFBBIN_ACTION_BLOCK
 };
 
 // Who owns the FormDesign chunk being parsed. The file stores no type for a
@@ -69,24 +68,24 @@ enum <uint> PF_PARTS_ATTR
 // Action ids (AppPrefabSystem::Initialize)
 enum <uint> PF_ACTION_ID
 {
-    PF_ACTION_SMASH       = 5000,
-    PF_ACTION_TRANSFIGURE = 5001,   // state change, arg = target asset hash
-    PF_ACTION_SFX         = 5003,
-    PF_ACTION_BREAK       = 5004,
-    PF_ACTION_TIMER       = 5005,
-    PF_ACTION_TOUCH       = 5006,
-    PF_ACTION_BULLET      = 5007,
-    PF_ACTION_PLAYANIM    = 5008,
-    PF_ACTION_DAMAGE      = 5009,
-    PF_ACTION_HIDE        = 5010,
-    PF_ACTION_SOUND       = 5011,
-    PF_ACTION_RESETPOSE   = 5012,
-    PF_ACTION_INVINCIBLE  = 5013,
-    PF_ACTION_REGION      = 5014,
-    PF_ACTION_KEYGUIDE    = 5015,
-    PF_ACTION_SHOW        = 5016,
-    PF_ACTION_DUMMYPOLY_REGION = 5017, // PC only: Region placed on a model dummy poly
-    PF_ACTION_MODEL_FADE  = 5018,   // PC only: sets a 0..1 model fade value (byte = value * 255)
+    PF_ACTION_SMASH             = 5000,
+    PF_ACTION_TRANSFIGURE       = 5001,
+    PF_ACTION_SFX               = 5003,
+    PF_ACTION_BREAK             = 5004,
+    PF_ACTION_TIMER             = 5005,
+    PF_ACTION_TOUCH             = 5006,
+    PF_ACTION_BULLET            = 5007,
+    PF_ACTION_PLAYANIM          = 5008,
+    PF_ACTION_DAMAGE            = 5009,
+    PF_ACTION_HIDE              = 5010,
+    PF_ACTION_SOUND             = 5011,
+    PF_ACTION_RESETPOSE         = 5012,
+    PF_ACTION_INVINCIBLE        = 5013,
+    PF_ACTION_REGION            = 5014,
+    PF_ACTION_KEYGUIDE          = 5015,
+    PF_ACTION_SHOW              = 5016,
+    PF_ACTION_DUMMYPOLY_REGION  = 5017,
+    PF_ACTION_MODEL_FADE        = 5018,
 };
 
 // Comparisons push a Boolean.
@@ -110,14 +109,12 @@ enum <uint> PF_OPERATOR
     PF_OP_OR_BOOLEAN      = 15,
 };
 
-// Registered functions. Both pop one value and look like stubs; no PC file uses them.
 enum <uint> PF_FUNCTION
 {
     PF_FUNC_XREAL = 1024,
     PF_FUNC_XBOOL = 1025,
 };
 
-// Event accessors (AppPrefabSystem id/name registry)
 enum <uint> PF_EVENT_PARAM
 {
     Damaged_Hp = 2000, Damaged_Destructed, Damaged_Spread, Damaged_OldHp,
@@ -161,7 +158,7 @@ local int64 g_visited[4096];
 local PF_CHUNK_OWNER g_fdOwner = PF_OWNER_NONE;
 local uint           g_fdId    = 0;
 local PF_CHUNK_OWNER g_attrOwner = PF_OWNER_NONE;  // set by the asset / parts block
-local int   g_visitedCount = 0;
+local int            g_visitedCount = 0;
 
 int IsVisited(int64 off)
 {
@@ -210,11 +207,11 @@ typedef struct {
     ubyte byteOrderFlag;
     ubyte bitOrderFlag;
     short unk16;
-    short version; Assert(version == 1);   // TestPfbbinHeaderValidation requires 1
+    short version; Assert(version == 1);    // TestPfbbinHeaderValidation requires 1
     short unk1A; Assert(unk1A == 1);
     short unk1C; Assert(unk1C == 1);
     short unk1E; Assert(unk1E == 1);
-    uint64 pRelocTable <format=hex>;   		// -> PF_RELOC_TABLE (not itself relocated)
+    uint64 pRelocTable <format=hex>;   	    // -> PF_RELOC_TABLE (not itself relocated)
     uint64 pParts <format=hex>;             // -> PF_PFBBIN_PARTS_BLOCK[partsCount]
     uint64 pAssets <format=hex>;            // -> PF_PFBBIN_ASSET_BLOCK[assetCount]
     ushort partsCount;
@@ -307,9 +304,9 @@ struct PF_NODE {
     if (pData != 0) {
         FSeek(pData);
         switch (type) {
-            case PF_NODE_EVENT:   uint eventId; break;
-            case PF_NODE_BRANCH:  struct PF_BRANCH branch;   break;
-            case PF_NODE_ACTION: struct PF_PFBBIN_ACTION_BLOCK action; break;
+            case PF_NODE_EVENT:     uint eventId; break;
+            case PF_NODE_BRANCH:    struct PF_BRANCH branch;   break;
+            case PF_NODE_ACTION:    struct PF_PFBBIN_ACTION_BLOCK action; break;
         }
     }
     if (pNext != 0 && !IsVisited(pNext)) {
